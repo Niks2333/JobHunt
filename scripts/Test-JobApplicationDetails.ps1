@@ -1,7 +1,7 @@
 param([string]$BackendUrl = 'http://localhost:5077')
 
 $ErrorActionPreference = 'Stop'
-$jobApplications = Invoke-RestMethod "$BackendUrl/api/applications"
+$jobApplications = (Invoke-RestMethod "$BackendUrl/api/applications?search=%5BSample%5D&pageSize=100").items
 $sampleApplications = @($jobApplications | Where-Object companyName -like '[[]Sample]*')
 if ($sampleApplications.Count -eq 0) {
     throw 'Seed the sample applications before running the details verification.'

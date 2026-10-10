@@ -6,6 +6,18 @@ GET {{backendAddress}}/api/health
 ### List real saved applications
 GET {{backendAddress}}/api/applications
 
+### All-time application analytics
+GET {{backendAddress}}/api/analytics/applications
+
+### Analytics filtered by inclusive application dates
+GET {{backendAddress}}/api/analytics/applications?startDate=2026-10-01&endDate=2026-10-31
+
+### Next 10 future, non-cancelled interview rounds
+GET {{backendAddress}}/api/interviews/upcoming
+
+### Interview rounds for an application (replace the identifier as needed)
+GET {{backendAddress}}/api/applications/1/interviews
+
 ### Validation example: this must return HTTP 400 and creates no record
 POST {{backendAddress}}/api/applications
 Content-Type: application/json

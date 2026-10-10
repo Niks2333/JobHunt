@@ -1,0 +1,10 @@
+.interviews-panel { background: white; border: 1px solid #e3e9f2; border-radius: 12px; padding: 24px; margin: 24px 0; }
+.section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+h2 { font-size: 18px; margin: 0; }
+h3 { font-size: 15px; margin: 0; }
+p { font-size: 13px; line-height: 1.7; }
+.muted { color: #7487a4; }
+.interview-round { border-top: 1px solid #e3e9f2; padding: 20px 0 4px; }
+.notes { white-space: pre-wrap; overflow-wrap: anywhere; }
+.cancelled-label { font-size: 11px; color: #a82737; margin-left: 8px; }
+a { color: #315fe8; }

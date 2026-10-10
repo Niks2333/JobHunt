@@ -1,0 +1,79 @@
+<dialog #statusDialog aria-labelledby="status-form-title" (cancel)="cancelDialog($event)">
+  <div class="dialog-heading">
+    <div>
+      <p class="eyebrow">APPLICATION PROGRESS</p>
+      <h2 id="status-form-title">Change status</h2>
+    </div>
+    <button
+      class="close-button"
+      type="button"
+      aria-label="Close status form"
+      [disabled]="isSaving()"
+      (click)="cancelled.emit()"
+    >
+      ×
+    </button>
+  </div>
+  <p class="current-status">
+    Current status: <strong>{{ currentStatus() }}</strong>
+  </p>
+  <form [formGroup]="statusForm" (ngSubmit)="submitStatusChange()">
+    <fieldset [disabled]="isSaving()">
+      <label for="new-status">New status</label
+      ><select
+        id="new-status"
+        formControlName="status"
+        autofocus
+        aria-describedby="status-error"
+        [attr.aria-invalid]="
+          statusForm.controls.status.touched && statusForm.controls.status.invalid
+        "
+      >
+        <option value="" disabled>Select a status</option>
+        @for (status of availableStatuses; track status) {
+          @if (status !== currentStatus()) {
+            <option [value]="status">{{ status }}</option>
+          }
+        }
+      </select>
+      @if (statusForm.controls.status.touched && statusForm.controls.status.invalid) {
+        <small class="field-error" id="status-error">Choose a different status.</small>
+      }
+      <label for="status-change-date">Date this change occurred</label
+      ><input
+        id="status-change-date"
+        type="date"
+        formControlName="occurredOn"
+        [min]="earliestChangeDate()"
+        [max]="today"
+        aria-describedby="status-date-help status-date-error"
+        [attr.aria-invalid]="
+          statusForm.controls.occurredOn.touched && statusForm.controls.occurredOn.invalid
+        "
+      />
+      <p class="field-help" id="status-date-help">
+        Use the date you received the update. The previous history will be preserved.
+      </p>
+      @if (statusForm.controls.occurredOn.touched && statusForm.controls.occurredOn.invalid) {
+        <small class="field-error" id="status-date-error"
+          >Choose a date from {{ earliestChangeDate() }} through {{ today }}.</small
+        >
+      }
+    </fieldset>
+    @if (saveError()) {
+      <p class="error-banner" role="alert">{{ saveError() }}</p>
+    }
+    <div class="dialog-actions">
+      <button
+        class="secondary-button"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="cancelled.emit()"
+      >
+        Cancel</button
+      ><button class="primary-button" type="submit" [disabled]="isSaving()">
+        {{ isSaving() ? 'Saving…' : 'Save status' }}
+      </button>
+    </div>
+  </form>
+</dialog>

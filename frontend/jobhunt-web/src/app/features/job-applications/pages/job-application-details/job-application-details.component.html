@@ -1,4 +1,7 @@
 <a class="back-link" routerLink="/">← Back to applications</a>
+@if (successMessage()) {
+  <div class="success-banner" role="status">{{ successMessage() }}</div>
+}
 <div [attr.aria-busy]="isLoading()">
   @if (isLoading()) {
     <section class="state-card" role="status">
@@ -25,10 +28,29 @@
         <h1>{{ details.application.companyName }}</h1>
         <p>{{ details.application.roleTitle }}</p>
       </div>
-      <span class="status-badge" [attr.data-status]="details.application.status">{{
-        details.application.status
-      }}</span>
+      <div class="details-actions">
+        <span class="status-badge" [attr.data-status]="details.application.status">{{
+          details.application.status
+        }}</span>
+        <button
+          #editApplicationButton
+          class="primary-button"
+          type="button"
+          (click)="openEditForm()"
+        >
+          Edit application
+        </button>
+        <button
+          #changeStatusButton
+          class="secondary-button"
+          type="button"
+          (click)="openStatusForm()"
+        >
+          Change status
+        </button>
+      </div>
     </header>
+    <app-application-interviews [jobApplicationId]="details.application.jobApplicationId" [applicationDate]="details.application.applicationDate" />
     <div class="details-grid">
       <div class="application-information">
         <section class="details-card" aria-labelledby="overview-heading">
@@ -107,3 +129,22 @@
     </div>
   }
 </div>
+@if (isEditFormOpen() && applicationDetails(); as details) {
+  <app-job-application-form
+    [initialApplication]="details.application"
+    [isSaving]="isSaving()"
+    [saveError]="saveError()"
+    (submitted)="saveApplicationChanges($event)"
+    (cancelled)="closeEditForm()"
+  />
+}
+@if (isStatusFormOpen() && applicationDetails(); as details) {
+  <app-job-application-status-form
+    [currentStatus]="details.application.status"
+    [earliestChangeDate]="earliestStatusChangeDate()"
+    [isSaving]="isSaving()"
+    [saveError]="statusSaveError()"
+    (submitted)="saveStatusChange($event)"
+    (cancelled)="closeStatusForm()"
+  />
+}

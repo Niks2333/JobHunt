@@ -1,0 +1,82 @@
+dialog {
+  width: min(480px, calc(100% - 32px));
+  max-height: calc(100dvh - 40px);
+  padding: 26px;
+  border: 1px solid #e5eaf1;
+  border-radius: 14px;
+  color: #182c49;
+  box-shadow: 0 25px 100px #10234335;
+}
+dialog::backdrop {
+  background: #14274580;
+}
+.dialog-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+h2 {
+  margin: 10px 0 0;
+  font-size: 24px;
+}
+.close-button {
+  background: none;
+  border: 0;
+  font-size: 27px;
+  color: #64748b;
+}
+.current-status {
+  font-size: 13px;
+  color: #627087;
+  background: #f5f8fc;
+  border-radius: 8px;
+  padding: 13px;
+  margin: 22px 0;
+}
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+label {
+  display: block;
+  margin: 20px 0 8px;
+  font-size: 13px;
+  font-weight: 650;
+}
+select,
+input {
+  width: 100%;
+  background: white;
+  color: #182c49;
+  border: 1px solid #dce3ed;
+  border-radius: 7px;
+  padding: 11px;
+  font: inherit;
+  font-size: 14px;
+}
+[aria-invalid='true'] {
+  border-color: #bd3744;
+}
+.field-help {
+  font-size: 12px;
+  color: #738096;
+  line-height: 1.7;
+  margin: 10px 0;
+}
+.field-error {
+  display: block;
+  color: #ac2838;
+  font-size: 12px;
+  margin-top: 8px;
+}
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #edf0f5;
+  padding-top: 20px;
+  margin-top: 24px;
+}

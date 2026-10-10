@@ -46,8 +46,7 @@
   display: flex;
   gap: 12px;
   align-items: center;
-  background: #edf2ff;
-  color: #254ecc;
+  color: #435675;
   border-radius: 9px;
   padding: 13px;
   text-decoration: none;
@@ -57,6 +56,8 @@
 .navigation-link span {
   font-size: 20px;
 }
+.navigation-link.active { background: #edf2ff; color: #254ecc; }
+.navigation-link + .navigation-link { margin-top: 6px; }
 .sidebar-note {
   margin-top: auto;
   padding: 28px 10px 0;
@@ -131,6 +132,7 @@ footer {
   }
   .sidebar {
     width: 100%;
+    flex-wrap: wrap;
     padding: 16px 20px;
     flex-direction: row;
     align-items: center;

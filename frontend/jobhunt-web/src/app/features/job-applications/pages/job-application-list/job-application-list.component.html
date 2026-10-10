@@ -17,13 +17,59 @@
   <span class="summary-icon" aria-hidden="true">▤</span>
   <div>
     <p>Total applications</p>
-    <strong>{{ isLoading() || loadError() ? '—' : jobApplications().length }}</strong>
+    <strong>{{ totalApplications() ?? '—' }}</strong>
   </div>
   <span class="summary-note">Your job search, in one place.</span>
 </section>
 @if (successMessage()) {
   <div class="success-banner" role="status">{{ successMessage() }}</div>
 }
+<form
+  class="application-filters"
+  [formGroup]="filterForm"
+  (ngSubmit)="applyFilters()"
+  aria-label="Filter job applications"
+>
+  <div class="search-field">
+    <label for="application-search">Search company or role</label
+    ><input
+      id="application-search"
+      type="search"
+      formControlName="search"
+      maxlength="150"
+      placeholder="e.g. Developer or Cedar"
+    />
+  </div>
+  <div>
+    <label for="application-status">Status</label
+    ><select id="application-status" formControlName="status">
+      <option value="">All statuses</option>
+      @for (status of availableStatuses; track status) {
+        <option [value]="status">{{ status }}</option>
+      }
+    </select>
+  </div>
+  <div>
+    <label for="application-source">Source</label
+    ><select id="application-source" formControlName="source">
+      <option value="">All sources</option>
+      @for (source of availableSources(); track source) {
+        <option [value]="source">{{ source }}</option>
+      }
+    </select>
+  </div>
+  <div class="filter-actions">
+    <button class="primary-button" type="submit" [disabled]="isLoading()">Apply filters</button
+    ><button
+      class="secondary-button"
+      type="button"
+      (click)="clearFilters()"
+      [disabled]="isLoading()"
+    >
+      Clear filters
+    </button>
+  </div>
+</form>
 <section
   class="applications-panel"
   aria-labelledby="applications-heading"
@@ -31,7 +77,13 @@
 >
   <div class="panel-heading">
     <h2 id="applications-heading">Application activity</h2>
-    <span>Newest applications first</span>
+    <span aria-live="polite">{{
+      isLoading()
+        ? 'Loading…'
+        : loadError()
+          ? 'Unable to load results'
+          : matchingApplications() + ' matching applications'
+    }}</span>
   </div>
   @if (isLoading()) {
     <div class="state-panel" role="status">
@@ -51,14 +103,22 @@
   } @else if (jobApplications().length === 0) {
     <div class="state-panel">
       <div class="state-icon" aria-hidden="true">＋</div>
-      <h3>Your next chapter starts here</h3>
-      <p>
-        No applications yet. Add your first application<br />and start keeping track of your
-        opportunities.
-      </p>
-      <button type="button" class="secondary-button" (click)="openApplicationForm()">
-        Add your first application <span aria-hidden="true">→</span>
-      </button>
+      @if (hasActiveFilters()) {
+        <h3>No applications match your filters</h3>
+        <p>Try a different company, role, status, or source.</p>
+        <button type="button" class="secondary-button" (click)="clearFilters()">
+          Clear filters
+        </button>
+      } @else {
+        <h3>Your next chapter starts here</h3>
+        <p>
+          No applications yet. Add your first application<br />and start keeping track of your
+          opportunities.
+        </p>
+        <button type="button" class="secondary-button" (click)="openApplicationForm()">
+          Add your first application <span aria-hidden="true">→</span>
+        </button>
+      }
     </div>
   } @else {
     <div class="table-container">
@@ -116,8 +176,29 @@
       </table>
     </div>
     <div class="table-footer">
-      {{ jobApplications().length }} application{{ jobApplications().length === 1 ? '' : 's' }}
-      saved
+      <span aria-live="polite"
+        >Showing {{ firstVisibleApplication() }}–{{ lastVisibleApplication() }} of
+        {{ matchingApplications() }} matching applications</span
+      >
+      <nav class="pagination" aria-label="Application pages">
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="isLoading() || pageNumber() <= 1"
+          (click)="changePage(pageNumber() - 1)"
+        >
+          Previous
+        </button>
+        <span>Page {{ pageNumber() }} of {{ totalPages() }}</span>
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="isLoading() || pageNumber() >= totalPages()"
+          (click)="changePage(pageNumber() + 1)"
+        >
+          Next
+        </button>
+      </nav>
     </div>
   }
 </section>

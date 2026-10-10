@@ -1,0 +1,44 @@
+<div class="page-heading">
+  <div><p class="eyebrow">YOUR PROGRESS</p><h1>Dashboard</h1><p>See where your applications are taking you.</p></div>
+  <button class="secondary-button" type="button" (click)="refreshDashboard()" [disabled]="isLoading()">Refresh</button>
+</div>
+<form class="date-filters" [formGroup]="dateFilterForm" (ngSubmit)="applyDateFilter()">
+  <label>Applied from<input type="date" formControlName="startDate" /></label>
+  <label>Applied through<input type="date" formControlName="endDate" /></label>
+  <button class="primary-button" type="submit">Apply dates</button>
+  <button class="secondary-button" type="button" (click)="clearDateFilter()">All time</button>
+</form>
+@if (filterError()) { <p class="error-banner" role="alert">{{ filterError() }}</p> }
+<p class="definition">Dates include both endpoints and filter when you applied. Interview counts use all saved history for those applications.</p>
+<div [attr.aria-busy]="isLoading()" aria-live="polite">
+@if (isLoading()) {
+  <div class="state-panel">Loading your dashboard…</div>
+} @else if (loadError()) {
+  <div class="state-panel"><p class="error-banner" role="alert">{{ loadError() }}</p><button class="secondary-button" (click)="refreshDashboard()">Try again</button></div>
+} @else if (analytics(); as summary) {
+  <p class="range-label">Showing {{ summary.startDate ? (summary.startDate | date:'mediumDate') : 'the beginning' }} through {{ summary.endDate ? (summary.endDate | date:'mediumDate') : 'today and all saved dates' }}.</p>
+  <div class="summary-grid">
+    <article class="summary-card"><h2>Total applications</h2><strong>{{ summary.totalApplications }}</strong><p>In the selected range</p></article>
+    <article class="summary-card"><h2>Applications this month</h2><strong>{{ summary.applicationsThisMonth }}</strong><p>{{ summary.currentMonthStartDate | date:'MMMM yyyy' }} within the selected range</p></article>
+    <article class="summary-card"><h2>Reached an interview</h2><strong>{{ summary.applicationsReachingInterview }}</strong><p>Each application counted once</p></article>
+    <article class="summary-card"><h2>Interview conversion</h2><strong>{{ summary.interviewConversionPercentage | number:'1.0-1' }}%</strong><p>Reached interview ÷ total applications</p></article>
+  </div>
+  @if (summary.totalApplications === 0) {
+    <div class="state-panel"><h2>No applications in this range</h2><p>Try a different date range or add your first application.</p><a class="primary-button" routerLink="/">My applications</a></div>
+  } @else {
+    <div class="breakdown-grid">
+      <section class="breakdown-panel"><h2>Applications by current status</h2><p class="definition">The latest saved status of each application.</p>
+        @for (status of summary.applicationsByStatus; track status.label) {
+          <div class="breakdown-row"><div><span>{{ status.label }}</span><strong>{{ status.count }}</strong></div><div class="bar-track" aria-hidden="true"><span [style.width.%]="status.count / summary.totalApplications * 100"></span></div></div>
+        }
+      </section>
+      <section class="breakdown-panel"><h2>Applications by source</h2><p class="definition">Where you found your opportunities.</p>
+        @for (source of summary.applicationsBySource; track $index) {
+          <div class="breakdown-row"><div><span>{{ source.label }}</span><strong>{{ source.count }}</strong></div><div class="bar-track" aria-hidden="true"><span [style.width.%]="source.count / largestSourceCount() * 100"></span></div></div>
+        }
+      </section>
+    </div>
+  }
+}
+</div>
+<app-upcoming-interviews />

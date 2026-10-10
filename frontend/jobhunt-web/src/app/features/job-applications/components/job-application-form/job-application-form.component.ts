@@ -1,6 +1,7 @@
 import {
   Component,
   ElementRef,
+  OnInit,
   afterNextRender,
   inject,
   input,
@@ -8,7 +9,8 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CreateJobApplicationRequest } from '../../models/create-job-application-request.model';
+import { JobApplicationFieldsRequest } from '../../models/job-application-fields-request.model';
+import { JobApplicationResponse } from '../../models/job-application-response.model';
 
 @Component({
   selector: 'app-job-application-form',
@@ -16,10 +18,11 @@ import { CreateJobApplicationRequest } from '../../models/create-job-application
   templateUrl: './job-application-form.component.html',
   styleUrl: './job-application-form.component.css',
 })
-export class JobApplicationFormComponent {
+export class JobApplicationFormComponent implements OnInit {
+  readonly initialApplication = input<JobApplicationResponse | null>(null);
   readonly isSaving = input(false);
   readonly saveError = input('');
-  readonly submitted = output<CreateJobApplicationRequest>();
+  readonly submitted = output<JobApplicationFieldsRequest>();
   readonly cancelled = output<void>();
   private readonly formBuilder = inject(FormBuilder);
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('applicationDialog');
@@ -43,6 +46,21 @@ export class JobApplicationFormComponent {
   constructor() {
     // Native dialogs contain keyboard focus and support Escape without another library.
     afterNextRender(() => this.dialog().nativeElement.showModal());
+  }
+
+  ngOnInit() {
+    const application = this.initialApplication();
+    if (application) {
+      this.applicationForm.setValue({
+        companyName: application.companyName,
+        roleTitle: application.roleTitle,
+        applicationDate: application.applicationDate,
+        location: application.location ?? '',
+        source: application.source ?? '',
+        jobUrl: application.jobUrl ?? '',
+        notes: application.notes ?? '',
+      });
+    }
   }
 
   cancelDialog(event: Event) {

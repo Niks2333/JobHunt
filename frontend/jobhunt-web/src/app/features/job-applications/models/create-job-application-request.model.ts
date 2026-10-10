@@ -1,9 +1,3 @@
-export interface CreateJobApplicationRequest {
-  companyName: string;
-  roleTitle: string;
-  location: string | null;
-  source: string | null;
-  jobUrl: string | null;
-  applicationDate: string;
-  notes: string | null;
-}
+import { JobApplicationFieldsRequest } from './job-application-fields-request.model';
+
+export interface CreateJobApplicationRequest extends JobApplicationFieldsRequest {}

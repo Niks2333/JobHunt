@@ -8,6 +8,7 @@ public class JobHuntDbContext(DbContextOptions<JobHuntDbContext> databaseOptions
 {
     public DbSet<JobApplication> JobApplications => Set<JobApplication>();
     public DbSet<JobApplicationStatusHistory> JobApplicationStatusHistory => Set<JobApplicationStatusHistory>();
+    public DbSet<JobApplicationInterview> JobApplicationInterviews => Set<JobApplicationInterview>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

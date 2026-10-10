@@ -1,0 +1,25 @@
+<section class="interviews-panel" aria-labelledby="interviews-heading">
+  <div class="section-heading"><h2 id="interviews-heading">Interview rounds</h2><button class="secondary-button" type="button" (click)="openForm()" [disabled]="isFormOpen()">Add round</button></div>
+  <p class="muted">Dates and times are shown in India time (IST). Schedule rounds here and update the application status separately.</p>
+  @if (successMessage()) { <p class="success-banner" role="status">{{ successMessage() }}</p> }
+  @if (isFormOpen()) {
+    <app-interview-form [initialInterview]="editingInterview()" [applicationDate]="applicationDate()" [isSaving]="isSaving()" [saveError]="saveError()" (submitted)="saveInterview($event)" (cancelled)="closeForm()" />
+  }
+  <div [attr.aria-busy]="isLoading()">
+  @if (isLoading()) { <p role="status">Loading interview rounds…</p> }
+  @else if (loadError()) { <p class="error-banner" role="alert">{{ loadError() }}</p><button class="secondary-button" (click)="reloadInterviews()">Try again</button> }
+  @else if (interviews().length === 0) { <p class="muted">No interview rounds yet. Add one when an interview is arranged.</p> }
+  @else {
+    @for (interview of interviews(); track interview.jobApplicationInterviewId) {
+      <article class="interview-round">
+        <div class="section-heading"><h3>{{ interview.roundName }} @if (interview.isCancelled) { <span class="cancelled-label">Cancelled</span> }</h3><button class="secondary-button" type="button" (click)="openForm(interview)" [disabled]="isFormOpen()">Edit round</button></div>
+        <p>{{ interview.scheduledAtUtc | date:'dd MMM yyyy, h:mm a':'+0530' }} IST · {{ interview.mode === 'InPerson' ? 'In person' : interview.mode }}</p>
+        @if (interview.meetingUrl) { <p><a [href]="interview.meetingUrl" target="_blank" rel="noopener noreferrer">Open meeting link ↗<span class="visually-hidden"> (opens in a new tab)</span></a></p> }
+        @if (interview.location) { <p class="notes"><strong>Location / phone details:</strong> {{ interview.location }}</p> }
+        @if (interview.preparationNotes) { <p class="notes"><strong>Preparation:</strong> {{ interview.preparationNotes }}</p> }
+        @if (interview.feedback) { <p class="notes"><strong>Feedback:</strong> {{ interview.feedback }}</p> }
+      </article>
+    }
+  }
+  </div>
+</section>

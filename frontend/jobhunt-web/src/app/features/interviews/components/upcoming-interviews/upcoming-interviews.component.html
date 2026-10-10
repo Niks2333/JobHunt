@@ -1,0 +1,17 @@
+<section class="upcoming-panel" aria-labelledby="upcoming-heading" [attr.aria-busy]="isLoading()">
+  <h2 id="upcoming-heading">Upcoming interviews</h2>
+  <p class="muted">Your next 10 scheduled rounds across all applications, independent of the analytics date filter. Times are in India time (IST).</p>
+  @if (isLoading()) { <p role="status">Loading upcoming interviews…</p> }
+  @else if (loadError()) { <p class="error-banner" role="alert">{{ loadError() }}</p><button class="secondary-button" (click)="reloadInterviews()">Try again</button> }
+  @else if (upcomingInterviews(); as upcoming) {
+    @if (upcoming.totalUpcomingInterviews === 0) { <p>No upcoming interviews. Add a round from an application's details page.</p> }
+    @else {
+      <p class="muted">Showing {{ upcoming.items.length }} of {{ upcoming.totalUpcomingInterviews }} upcoming rounds.</p>
+      <ol>
+        @for (item of upcoming.items; track item.interview.jobApplicationInterviewId) {
+          <li><div><a [routerLink]="['/applications', item.interview.jobApplicationId]">{{ item.companyName }} · {{ item.interview.roundName }}</a><p>{{ item.roleTitle }} · {{ item.interview.mode === 'InPerson' ? 'In person' : item.interview.mode }}</p></div><time [attr.datetime]="item.interview.scheduledAtUtc">{{ item.interview.scheduledAtUtc | date:'dd MMM yyyy, h:mm a':'+0530' }} IST</time></li>
+        }
+      </ol>
+    }
+  }
+</section>

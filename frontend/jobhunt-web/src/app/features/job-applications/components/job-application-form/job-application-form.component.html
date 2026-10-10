@@ -2,7 +2,9 @@
   <div class="dialog-header">
     <div>
       <p class="eyebrow">YOUR NEXT OPPORTUNITY</p>
-      <h2 id="form-title">Add an application</h2>
+      <h2 id="form-title">
+        {{ initialApplication() ? 'Edit application' : 'Add an application' }}
+      </h2>
       <p>Keep the details in one place.</p>
     </div>
     <button
@@ -99,7 +101,8 @@
         <div class="field">
           <span class="field-label">Status</span>
           <div class="initial-status">
-            <span class="status-dot"></span> Applied <small>Starting stage</small>
+            <span class="status-dot"></span> {{ initialApplication()?.status ?? 'Applied' }}
+            <small>{{ initialApplication() ? 'Current stage' : 'Starting stage' }}</small>
           </div>
         </div>
         <div class="field full-width">
@@ -144,7 +147,7 @@
         >
           Cancel</button
         ><button type="submit" class="primary-button" [disabled]="isSaving()">
-          {{ isSaving() ? 'Saving…' : 'Save application' }}
+          {{ isSaving() ? 'Saving…' : initialApplication() ? 'Save changes' : 'Save application' }}
         </button>
       </div>
     </div>

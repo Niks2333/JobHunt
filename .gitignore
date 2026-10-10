@@ -12,3 +12,4 @@
 *.ldf
 *.ndf
 *.bak
+.verification-artifacts/

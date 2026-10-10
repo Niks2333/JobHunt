@@ -10,8 +10,9 @@ namespace JobHunt.Api.Controllers;
 public class JobApplicationsController(JobApplicationService jobApplicationService) : ControllerBase
 {
     [HttpGet]
-    public Task<List<JobApplicationResponse>> GetJobApplications(CancellationToken cancellationToken) =>
-        jobApplicationService.GetJobApplicationsAsync(cancellationToken);
+    public Task<JobApplicationPageResponse> GetJobApplications(
+        [FromQuery] GetJobApplicationsRequest request, CancellationToken cancellationToken) =>
+        jobApplicationService.GetJobApplicationsAsync(request, cancellationToken);
 
     [HttpGet("{jobApplicationId:int}")]
     public async Task<ActionResult<JobApplicationDetailsResponse>> GetJobApplicationDetails(
@@ -26,7 +27,7 @@ public class JobApplicationsController(JobApplicationService jobApplicationServi
     public async Task<ActionResult<JobApplicationResponse>> CreateJobApplication(
         CreateJobApplicationRequest request, CancellationToken cancellationToken)
     {
-        var validationErrors = jobApplicationService.ValidateCreateRequest(request);
+        var validationErrors = jobApplicationService.ValidateApplicationRequest(request);
         foreach (var validationError in validationErrors)
             foreach (var message in validationError.Value)
                 ModelState.AddModelError(validationError.Key, message);
@@ -37,5 +38,31 @@ public class JobApplicationsController(JobApplicationService jobApplicationServi
         var jobApplication = await jobApplicationService.CreateJobApplicationAsync(request, cancellationToken);
         return CreatedAtAction(nameof(GetJobApplicationDetails),
             new { jobApplicationId = jobApplication.JobApplicationId }, jobApplication);
+    }
+    [HttpPut("{jobApplicationId:int}")]
+    public async Task<ActionResult<JobApplicationResponse>> UpdateJobApplication(
+        int jobApplicationId, UpdateJobApplicationRequest request, CancellationToken cancellationToken)
+    {
+        var updateResult = await jobApplicationService.UpdateJobApplicationAsync(
+            jobApplicationId, request, cancellationToken);
+        foreach (var validationError in updateResult.ValidationErrors)
+            foreach (var message in validationError.Value)
+                ModelState.AddModelError(validationError.Key, message);
+
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+        return updateResult.Application is null ? NotFound() : Ok(updateResult.Application);
+    }
+    [HttpPost("{jobApplicationId:int}/status-changes")]
+    public async Task<ActionResult<JobApplicationResponse>> ChangeJobApplicationStatus(
+        int jobApplicationId, ChangeJobApplicationStatusRequest request, CancellationToken cancellationToken)
+    {
+        var changeResult = await jobApplicationService.ChangeJobApplicationStatusAsync(
+            jobApplicationId, request, cancellationToken);
+        foreach (var validationError in changeResult.ValidationErrors)
+            foreach (var message in validationError.Value)
+                ModelState.AddModelError(validationError.Key, message);
+
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+        return changeResult.Application is null ? NotFound() : Ok(changeResult.Application);
     }
 }

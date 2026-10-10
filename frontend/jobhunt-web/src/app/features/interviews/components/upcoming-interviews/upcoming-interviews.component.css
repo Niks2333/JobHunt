@@ -1,0 +1,10 @@
+.upcoming-panel { background: white; border: 1px solid #e3e9f2; border-radius: 12px; padding: 24px; margin-top: 24px; }
+h2 { margin: 0; font-size: 18px; }
+p, time, a { font-size: 13px; line-height: 1.7; }
+.muted, li p { color: #7487a4; }
+ol { list-style: none; padding: 0; margin-bottom: 0; }
+li { display: flex; justify-content: space-between; gap: 16px; border-top: 1px solid #e3e9f2; padding: 16px 0; }
+li p { margin: 4px 0 0; }
+a { color: #315fe8; font-weight: 650; overflow-wrap: anywhere; }
+time { flex-shrink: 0; }
+@media (max-width: 750px) { li { flex-direction: column; gap: 8px; } }

@@ -1,0 +1,19 @@
+<form [formGroup]="interviewForm" (ngSubmit)="submitInterview()" aria-label="Interview round">
+  <h3>{{ initialInterview() ? 'Edit interview round' : 'Add interview round' }}</h3>
+  <p>Enter the date and time in India time (IST, UTC+05:30).</p>
+  @if (validationError()) { <p class="error-banner" role="alert">{{ validationError() }}</p> }
+  @if (saveError()) { <p class="error-banner" role="alert">{{ saveError() }}</p> }
+  <fieldset [disabled]="isSaving()">
+    <label>Round name *<input formControlName="roundName" maxlength="150" required placeholder="Technical round 1" /></label>
+    <div class="field-row">
+      <label>Date and time (IST) *<input type="datetime-local" formControlName="scheduledLocalTime" [min]="applicationDate() + 'T00:00'" required /></label>
+      <label>Mode *<select formControlName="mode"><option value="Online">Online</option><option value="Phone">Phone</option><option value="InPerson">In person</option></select></label>
+    </div>
+    <label>Meeting link<input type="url" formControlName="meetingUrl" maxlength="2048" placeholder="https://…" /></label>
+    <label>Location or phone details<input formControlName="location" maxlength="200" /></label>
+    <label>Preparation notes<textarea formControlName="preparationNotes" maxlength="5000" rows="3"></textarea></label>
+    <label>Feedback<textarea formControlName="feedback" maxlength="5000" rows="3"></textarea></label>
+    <label class="checkbox-label"><input type="checkbox" formControlName="isCancelled" /> This interview is cancelled</label>
+  </fieldset>
+  <div class="form-actions"><button class="primary-button" type="submit" [disabled]="isSaving()">{{ isSaving() ? 'Saving…' : 'Save round' }}</button><button class="secondary-button" type="button" (click)="cancelled.emit()" [disabled]="isSaving()">Cancel</button></div>
+</form>

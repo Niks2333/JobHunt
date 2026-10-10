@@ -12,6 +12,10 @@ applicationBuilder.Services.AddDbContext<JobHuntDbContext>(databaseOptions =>
         ?? throw new InvalidOperationException("Configure ConnectionStrings:JobHuntDatabase.")));
 applicationBuilder.Services.AddScoped<JobApplicationDataAccess>();
 applicationBuilder.Services.AddScoped<JobApplicationService>();
+applicationBuilder.Services.AddScoped<ApplicationAnalyticsDataAccess>();
+applicationBuilder.Services.AddScoped<ApplicationAnalyticsService>();
+applicationBuilder.Services.AddScoped<JobApplicationInterviewDataAccess>();
+applicationBuilder.Services.AddScoped<JobApplicationInterviewService>();
 
 var webApplication = applicationBuilder.Build();
 

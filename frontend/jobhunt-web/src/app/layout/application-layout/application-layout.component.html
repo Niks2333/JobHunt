@@ -4,9 +4,10 @@
       ><span class="brand-icon">J</span> JobHunt<span class="brand-dot">.</span></a
     >
     <p class="navigation-label">YOUR WORKSPACE</p>
-    <a class="navigation-link" routerLink="/" aria-current="page"
+    <a class="navigation-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page"
       ><span aria-hidden="true">▤</span> My applications</a
     >
+    <a class="navigation-link" routerLink="/dashboard" routerLinkActive="active" ariaCurrentWhenActive="page"><span aria-hidden="true">▥</span> Dashboard</a>
     <div class="sidebar-note">
       <span class="note-dot"></span> One opportunity at a time.
       <p>A little structure for your next big move.</p>

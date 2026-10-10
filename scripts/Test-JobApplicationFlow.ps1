@@ -60,7 +60,8 @@ try {
     $olderApplication = Read-JsonResponse $olderResponse
     $createdApplicationIdentifiers.Add([int]$olderApplication.jobApplicationId)
 
-    $listedApplications = Invoke-RestMethod "$BackendUrl/api/applications"
+    $sampleSearch = [Uri]::EscapeDataString($testCompanyName)
+    $listedApplications = (Invoke-RestMethod "$BackendUrl/api/applications?search=$sampleSearch&pageSize=100").items
     $testApplications = @($listedApplications | Where-Object companyName -eq $testCompanyName)
     Assert-Condition ($testApplications.Count -eq 2) 'Both applications must be readable from SQL Server.'
     Assert-Condition ($testApplications[0].jobApplicationId -eq $savedApplication.jobApplicationId) 'Application date must control newest-first ordering.'
@@ -82,7 +83,7 @@ try {
         $validationResponse = Read-JsonResponse $invalidResponse
         Assert-Condition ($null -ne $validationResponse.errors) 'Validation response must contain field errors.'
     }
-    $afterInvalidRequests = Invoke-RestMethod "$BackendUrl/api/applications"
+    $afterInvalidRequests = (Invoke-RestMethod "$BackendUrl/api/applications?search=$sampleSearch&pageSize=100").items
     Assert-Condition (@($afterInvalidRequests | Where-Object companyName -eq $testCompanyName).Count -eq 2) 'Invalid requests must not create records.'
     $notFoundResponse = Invoke-WebRequest "$BackendUrl/api/applications/2147483647" -SkipHttpErrorCheck
     Assert-Condition ($notFoundResponse.StatusCode -eq 404) 'Unknown identifiers must return HTTP 404.'

@@ -5,6 +5,12 @@
   font-size: 13px;
   margin-bottom: 26px;
 }
+.details-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
 .back-link:hover {
   color: #315fe8;
   text-decoration: underline;

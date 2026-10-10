@@ -14,4 +14,5 @@ public class JobApplication
     public DateTime CreatedAtUtc { get; set; }
     public DateTime UpdatedAtUtc { get; set; }
     public List<JobApplicationStatusHistory> StatusHistory { get; set; } = [];
+    public List<JobApplicationInterview> Interviews { get; set; } = [];
 }
