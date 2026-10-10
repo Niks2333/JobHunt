@@ -1,0 +1,237 @@
+.page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+h1 {
+  font-size: 32px;
+  letter-spacing: -1px;
+  margin: 9px 0 10px;
+  font-weight: 720;
+}
+.page-description {
+  margin: 0;
+  color: #728096;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.page-heading button {
+  white-space: nowrap;
+}
+.page-heading button span {
+  font-size: 19px;
+  line-height: 1;
+}
+.summary-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: #fff;
+  border: 1px solid #e5eaf1;
+  padding: 23px 26px;
+  border-radius: 12px;
+  margin-bottom: 28px;
+}
+.summary-icon {
+  background: #eef3ff;
+  color: #315fe8;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  font-size: 26px;
+}
+.summary-card p {
+  margin: 0 0 5px;
+  color: #708096;
+  font-size: 12px;
+}
+.summary-card strong {
+  font-size: 30px;
+  line-height: 1.1;
+  font-weight: 650;
+}
+.summary-note {
+  margin-left: auto;
+  color: #8390a1;
+  font-size: 12px;
+}
+.applications-panel {
+  background: #fff;
+  border: 1px solid #e5eaf1;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.panel-heading {
+  padding: 23px 26px;
+  border-bottom: 1px solid #edf0f5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+.panel-heading > span {
+  color: #8390a1;
+  font-size: 11px;
+}
+.state-panel {
+  text-align: center;
+  padding: 66px 24px 76px;
+}
+.state-icon {
+  border: 1px solid #dae3fc;
+  background: #f3f6ff;
+  color: #315fe8;
+  border-radius: 16px;
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 22px;
+  font-size: 32px;
+}
+h3 {
+  font-size: 18px;
+  font-weight: 650;
+  margin: 0 0 12px;
+}
+.state-panel p {
+  font-size: 13px;
+  color: #7a879b;
+  line-height: 1.8;
+  margin: 0 0 24px;
+}
+.table-container {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+th {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #79869b;
+  font-weight: 600;
+  background: #fafbfd;
+  padding: 16px 24px;
+}
+td {
+  padding: 23px 24px;
+  border-top: 1px solid #edf0f5;
+  font-size: 12px;
+  color: #56677e;
+}
+.company-cell {
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+  min-width: 210px;
+  overflow-wrap: anywhere;
+}
+.company-avatar {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  background: #edf2fa;
+  color: #4d6489;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  font-weight: 650;
+}
+.company-cell .application-details-link {
+  color: #20334d;
+  font-size: 13px;
+  font-weight: 650;
+  margin-top: 0;
+}
+.company-cell p {
+  margin: 5px 0 0;
+}
+.company-cell a {
+  color: #315fe8;
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 11px;
+  text-decoration: none;
+}
+.company-cell a:hover {
+  text-decoration: underline;
+}
+.date-cell {
+  white-space: nowrap;
+}
+.status-badge {
+  background: #eef3ff;
+  color: #315bd1;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.table-footer {
+  padding: 17px 26px;
+  border-top: 1px solid #edf0f5;
+  font-size: 11px;
+  color: #8390a1;
+}
+.page-tip {
+  margin: 22px 0 0;
+  color: #8491a3;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.page-tip span {
+  color: #315fe8;
+  margin-right: 6px;
+}
+.loading-indicator {
+  display: block;
+  width: 30px;
+  height: 30px;
+  margin: 0 auto 22px;
+  border: 3px solid #e5ecfc;
+  border-top-color: #315fe8;
+  border-radius: 50%;
+  animation: rotate 1s linear infinite;
+}
+@keyframes rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-indicator {
+    animation: none;
+  }
+}
+@media (max-width: 750px) {
+  .page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  h1 {
+    font-size: 28px;
+  }
+  .summary-note {
+    display: none;
+  }
+  .panel-heading {
+    padding: 20px;
+  }
+  .panel-heading > span {
+    display: none;
+  }
+}

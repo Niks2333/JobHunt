@@ -1,0 +1,22 @@
+<div class="workspace">
+  <aside class="sidebar" aria-label="Main navigation">
+    <a class="brand" routerLink="/" aria-label="JobHunt home"
+      ><span class="brand-icon">J</span> JobHunt<span class="brand-dot">.</span></a
+    >
+    <p class="navigation-label">YOUR WORKSPACE</p>
+    <a class="navigation-link" routerLink="/" aria-current="page"
+      ><span aria-hidden="true">▤</span> My applications</a
+    >
+    <div class="sidebar-note">
+      <span class="note-dot"></span> One opportunity at a time.
+      <p>A little structure for your next big move.</p>
+    </div>
+  </aside>
+  <div class="main-area">
+    <header class="topbar">
+      <span>Job search workspace</span><span class="local-badge">Personal tracker</span>
+    </header>
+    <main id="main-content"><router-outlet /></main>
+    <footer>JobHunt · Make your next move count.</footer>
+  </div>
+</div>

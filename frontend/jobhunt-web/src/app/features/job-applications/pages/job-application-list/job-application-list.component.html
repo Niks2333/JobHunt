@@ -1,0 +1,134 @@
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">KEEP MOVING FORWARD</p>
+    <h1>My applications</h1>
+    <p class="page-description">Every application is a step toward your next chapter.</p>
+  </div>
+  <button
+    #addApplicationButton
+    type="button"
+    class="primary-button"
+    (click)="openApplicationForm()"
+  >
+    <span aria-hidden="true">＋</span> Add application
+  </button>
+</div>
+<section class="summary-card" aria-label="Application summary">
+  <span class="summary-icon" aria-hidden="true">▤</span>
+  <div>
+    <p>Total applications</p>
+    <strong>{{ isLoading() || loadError() ? '—' : jobApplications().length }}</strong>
+  </div>
+  <span class="summary-note">Your job search, in one place.</span>
+</section>
+@if (successMessage()) {
+  <div class="success-banner" role="status">{{ successMessage() }}</div>
+}
+<section
+  class="applications-panel"
+  aria-labelledby="applications-heading"
+  [attr.aria-busy]="isLoading()"
+>
+  <div class="panel-heading">
+    <h2 id="applications-heading">Application activity</h2>
+    <span>Newest applications first</span>
+  </div>
+  @if (isLoading()) {
+    <div class="state-panel" role="status">
+      <span class="loading-indicator" aria-hidden="true"></span>
+      <h3>Loading your applications…</h3>
+      <p>Getting everything ready.</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="state-panel" role="alert">
+      <div class="state-icon">!</div>
+      <h3>Unable to load applications</h3>
+      <p>{{ loadError() }}</p>
+      <button type="button" class="secondary-button" (click)="loadJobApplications()">
+        Try again
+      </button>
+    </div>
+  } @else if (jobApplications().length === 0) {
+    <div class="state-panel">
+      <div class="state-icon" aria-hidden="true">＋</div>
+      <h3>Your next chapter starts here</h3>
+      <p>
+        No applications yet. Add your first application<br />and start keeping track of your
+        opportunities.
+      </p>
+      <button type="button" class="secondary-button" (click)="openApplicationForm()">
+        Add your first application <span aria-hidden="true">→</span>
+      </button>
+    </div>
+  } @else {
+    <div class="table-container">
+      <table>
+        <caption class="visually-hidden">
+          Saved job applications, newest application date first
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Company & role</th>
+            <th scope="col">Location</th>
+            <th scope="col">Source</th>
+            <th scope="col">Applied on</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (jobApplication of jobApplications(); track jobApplication.jobApplicationId) {
+            <tr>
+              <td>
+                <div class="company-cell">
+                  <span class="company-avatar" aria-hidden="true">{{
+                    jobApplication.companyName.charAt(0).toUpperCase()
+                  }}</span>
+                  <div>
+                    <a
+                      class="application-details-link"
+                      [routerLink]="['/applications', jobApplication.jobApplicationId]"
+                      [attr.aria-label]="
+                        'View ' + jobApplication.roleTitle + ' at ' + jobApplication.companyName
+                      "
+                      >{{ jobApplication.companyName }}</a
+                    >
+                    <p>{{ jobApplication.roleTitle }}</p>
+                    @if (jobApplication.jobUrl) {
+                      <a [href]="jobApplication.jobUrl" target="_blank" rel="noopener noreferrer"
+                        >View job posting ↗<span class="visually-hidden">
+                          for {{ jobApplication.roleTitle }} at
+                          {{ jobApplication.companyName }} (opens in a new tab)</span
+                        ></a
+                      >
+                    }
+                  </div>
+                </div>
+              </td>
+              <td>{{ jobApplication.location || '—' }}</td>
+              <td>{{ jobApplication.source || '—' }}</td>
+              <td class="date-cell">{{ jobApplication.applicationDate | date: 'dd MMM yyyy' }}</td>
+              <td>
+                <span class="status-badge">{{ jobApplication.status }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="table-footer">
+      {{ jobApplications().length }} application{{ jobApplications().length === 1 ? '' : 's' }}
+      saved
+    </div>
+  }
+</section>
+<p class="page-tip">
+  <span aria-hidden="true">✦</span> A consistent record today makes your job search easier tomorrow.
+</p>
+@if (isFormOpen()) {
+  <app-job-application-form
+    [isSaving]="isSaving()"
+    [saveError]="saveError()"
+    (submitted)="saveJobApplication($event)"
+    (cancelled)="closeApplicationForm()"
+  />
+}

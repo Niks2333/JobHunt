@@ -1,0 +1,195 @@
+# JobHunt
+
+A personal job application tracker, built step by step with Angular and ASP.NET Core.
+
+## What works now
+
+- My Applications screen with the total count and newest-first application list.
+- Click a company name to open Application Details: full saved information, notes,
+  current stage, and chronological status history. Includes loading, retry, and not-found states.
+- Add Application dialog: company, role, application date, location, source, job link, notes.
+- Required-field, length, date, and HTTP/HTTPS link validation.
+- SQL Server persistence with an initial Applied history entry saved in the same transaction.
+- Loading, empty, success, and error states. Failed saves keep the form values.
+
+Current scope is local single-user add, list, and details. Editing, status changes, search, filters,
+login, analytics, and AI are later milestones. Six fictional applications were added
+on request, labeled `[Sample]`, covering all six statuses with matching history.
+
+## Repository structure
+
+```text
+JobHunt/
+  backend/
+    JobHunt.sln
+    dotnet-tools.json
+    JobHunt.Api/
+      Controllers/
+      Services/
+      DataAccess/
+      Entities/
+      Models/
+        Requests/JobApplications/
+        Responses/JobApplications/
+      Data/
+        Configurations/
+        Migrations/
+  frontend/
+    jobhunt-web/
+      src/app/
+        layout/application-layout/
+        features/job-applications/
+          pages/
+            job-application-list/
+            job-application-details/
+          components/job-application-form/
+          services/
+          models/
+      package.json
+      package-lock.json
+      proxy.conf.json
+  scripts/
+    Seed-SampleApplications.sql
+    Test-JobApplicationFlow.ps1
+    Test-JobApplicationDetails.ps1
+  .gitignore
+  README.md
+```
+
+Commit source code, migrations, the local .NET tool manifest, and package-lock.json.
+Build output, installed dependencies, Visual Studio user settings, environment files,
+and local database files are excluded by .gitignore. Database records are not part
+of the repository; another checkout creates the schema using migrations and can
+optionally run the fictional sample-data script.
+
+To add these examples to a new local database (safe to re-run without duplicates):
+
+```powershell
+sqlcmd -S localhost -d JobHunt -E -C -b -i scripts/Seed-SampleApplications.sql
+```
+
+## Open in your editors
+
+- Visual Studio 2026: open `backend/JobHunt.sln`. Set JobHunt.Api as the startup project
+  and select the `http` launch profile. Press F5. API URL: http://localhost:5077.
+- VS Code: open `frontend/jobhunt-web`. Run `npm install` on a fresh checkout, then
+  `npm start`. Frontend URL: http://localhost:4200.
+
+The Angular development proxy forwards `/api/**` to port 5077. It is a development
+configuration; deployment routing will be configured when we reach that milestone.
+
+## Database
+
+Confirmed configuration: default SQL Server instance `localhost`, database `JobHunt`,
+Windows authentication. The connection string is in `appsettings.Development.json`.
+TrustServerCertificate is enabled for the local SQL Server development certificate.
+No SQL passwords are stored. Production configuration is intentionally not supplied.
+
+The database and initial migration have already been applied on this machine.
+To prepare another machine with SQL Server installed, use PowerShell:
+
+```powershell
+cd backend
+dotnet tool restore
+$env:ASPNETCORE_ENVIRONMENT = 'Development'
+dotnet ef database update --project JobHunt.Api
+```
+
+The server does not automatically create or migrate databases at startup.
+
+| Table | Contents |
+| --- | --- |
+| JobApplications | Current application details and status |
+| JobApplicationStatusHistory | Initial status, event date, and UTC recording time |
+| __EFMigrationsHistory | EF Core's record of applied schema migrations |
+
+ApplicationDate and OccurredOn use calendar dates. CreatedAtUtc, UpdatedAtUtc, and
+RecordedAtUtc use UTC timestamps. Initial history keeps the actual supplied application
+date instead of pretending the application occurred when the record was created.
+This first version validates today using the Asia/Kolkata calendar; timezone preferences
+can be introduced with user accounts.
+
+## Backend flow
+
+```text
+HTTP request
+  -> JobApplicationsController
+  -> JobApplicationService (business rules, initial status, response mapping)
+  -> JobApplicationDataAccess (LINQ database queries and persistence)
+  -> JobHuntDbContext (EF Core)
+  -> SQL Server
+```
+
+Database LINQ stays in DataAccess. The service also uses LINQ Select to map already-loaded
+entities to response models; that is in-memory transformation, not a database query.
+
+- Models/Requests: values accepted from Angular.
+- Models/Responses: values returned to Angular.
+- Entities: classes mapped to database tables.
+- Data/Configurations: columns, lengths, keys, relationships, and indexes.
+- Data/Migrations: versioned schema changes generated by EF Core.
+
+The API supports GET `/api/applications`, POST `/api/applications`, and GET
+`/api/applications/{jobApplicationId}`. Creation returns HTTP 201 with a Location
+header pointing to the saved record. New applications always start as Applied.
+GET `/api/health` reports process availability, not database readiness.
+
+## Frontend flow
+
+```text
+JobApplicationFormComponent -> submitted event
+  -> JobApplicationListComponent
+  -> JobApplicationService (HttpClient)
+  -> backend API
+  -> list refresh and success message
+```
+
+Feature folders contain pages, components, services, and TypeScript models. The shared
+layout lives under layout/. Reactive forms handle input validation. Signals hold page
+state. A native modal dialog handles focus containment and Escape dismissal.
+
+## Run from terminals
+
+```powershell
+dotnet run --project backend/JobHunt.Api --launch-profile http
+```
+
+In a separate terminal:
+
+```powershell
+cd frontend/jobhunt-web
+npm start
+```
+
+## Verification
+
+```powershell
+dotnet build backend/JobHunt.sln
+cd frontend/jobhunt-web
+npm run build
+```
+
+With the API running, from the workspace root:
+
+```powershell
+./scripts/Test-JobApplicationFlow.ps1
+./scripts/Test-JobApplicationDetails.ps1
+```
+
+The flow integration check creates uniquely named temporary records, checks HTTP validation,
+reads them through the API, verifies their SQL history, and deletes only its own records.
+It requires the confirmed local SQL Server and Windows authentication configuration.
+The details check reads the seeded samples and verifies complete chronological
+history, saved notes, and responses for missing or invalid identifiers.
+Browser visual and interaction checks were unavailable because browser access was denied.
+
+## Next learning checkpoint
+
+Walk through one real request from the form to SQL Server using a Visual Studio breakpoint
+in JobApplicationsController, then JobApplicationService, then JobApplicationDataAccess.
+The details page is under `features/job-applications/pages/job-application-details`
+and uses `/applications/:jobApplicationId`. The single-record API returns
+`{ application, statusHistory }`, using dedicated detail and history response models.
+DataAccess uses `Include` to fetch related history; the service maps entities to responses.
+Existing list and create response shapes remain the same. No schema changes are required.
+After understanding list/details, implement editing and dated status changes.

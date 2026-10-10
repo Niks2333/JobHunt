@@ -1,0 +1,152 @@
+<dialog #applicationDialog aria-labelledby="form-title" (cancel)="cancelDialog($event)">
+  <div class="dialog-header">
+    <div>
+      <p class="eyebrow">YOUR NEXT OPPORTUNITY</p>
+      <h2 id="form-title">Add an application</h2>
+      <p>Keep the details in one place.</p>
+    </div>
+    <button
+      class="close-button"
+      type="button"
+      aria-label="Close form"
+      [disabled]="isSaving()"
+      (click)="cancelled.emit()"
+    >
+      ×
+    </button>
+  </div>
+  <form [formGroup]="applicationForm" (ngSubmit)="submitApplication()">
+    <fieldset [disabled]="isSaving()">
+      <div class="form-grid">
+        <div class="field">
+          <label for="company-name">Company <span>*</span></label
+          ><input
+            id="company-name"
+            formControlName="companyName"
+            maxlength="150"
+            placeholder="e.g. Microsoft"
+            autofocus
+            [attr.aria-invalid]="
+              applicationForm.controls.companyName.touched &&
+              applicationForm.controls.companyName.invalid
+            "
+            aria-describedby="company-error"
+          />
+          @if (
+            applicationForm.controls.companyName.touched &&
+            applicationForm.controls.companyName.invalid
+          ) {
+            <small id="company-error" class="field-error">Enter a company name.</small>
+          }
+        </div>
+        <div class="field">
+          <label for="role-title">Role <span>*</span></label
+          ><input
+            id="role-title"
+            formControlName="roleTitle"
+            maxlength="150"
+            placeholder="e.g. .NET Developer"
+            [attr.aria-invalid]="
+              applicationForm.controls.roleTitle.touched &&
+              applicationForm.controls.roleTitle.invalid
+            "
+            aria-describedby="role-error"
+          />
+          @if (
+            applicationForm.controls.roleTitle.touched && applicationForm.controls.roleTitle.invalid
+          ) {
+            <small id="role-error" class="field-error">Enter a role title.</small>
+          }
+        </div>
+        <div class="field">
+          <label for="application-date">Application date <span>*</span></label
+          ><input
+            id="application-date"
+            type="date"
+            formControlName="applicationDate"
+            [max]="today"
+            [attr.aria-invalid]="
+              applicationForm.controls.applicationDate.touched &&
+              applicationForm.controls.applicationDate.invalid
+            "
+            aria-describedby="date-error"
+          />
+          @if (
+            applicationForm.controls.applicationDate.touched &&
+            applicationForm.controls.applicationDate.invalid
+          ) {
+            <small id="date-error" class="field-error">Choose today or an earlier date.</small>
+          }
+        </div>
+        <div class="field">
+          <label for="location">Location</label
+          ><input
+            id="location"
+            formControlName="location"
+            maxlength="150"
+            placeholder="e.g. Pune or Remote"
+          />
+        </div>
+        <div class="field">
+          <label for="source">Source</label
+          ><input
+            id="source"
+            formControlName="source"
+            maxlength="100"
+            placeholder="e.g. LinkedIn or Referral"
+          />
+        </div>
+        <div class="field">
+          <span class="field-label">Status</span>
+          <div class="initial-status">
+            <span class="status-dot"></span> Applied <small>Starting stage</small>
+          </div>
+        </div>
+        <div class="field full-width">
+          <label for="job-url">Job link</label
+          ><input
+            id="job-url"
+            type="url"
+            formControlName="jobUrl"
+            maxlength="2048"
+            placeholder="https://company.com/careers/role"
+            aria-describedby="url-error"
+            [attr.aria-invalid]="
+              applicationForm.controls.jobUrl.touched && applicationForm.controls.jobUrl.invalid
+            "
+          />
+          @if (applicationForm.controls.jobUrl.touched && applicationForm.controls.jobUrl.invalid) {
+            <small id="url-error" class="field-error">Enter a complete HTTP or HTTPS link.</small>
+          }
+        </div>
+        <div class="field full-width">
+          <label for="notes">Notes</label
+          ><textarea
+            id="notes"
+            formControlName="notes"
+            rows="3"
+            placeholder="Anything you want to remember about this opportunity…"
+          ></textarea>
+        </div>
+      </div>
+    </fieldset>
+    @if (saveError()) {
+      <p class="error-banner" role="alert">{{ saveError() }}</p>
+    }
+    <div class="dialog-footer">
+      <span>* Required fields</span>
+      <div>
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="isSaving()"
+          (click)="cancelled.emit()"
+        >
+          Cancel</button
+        ><button type="submit" class="primary-button" [disabled]="isSaving()">
+          {{ isSaving() ? 'Saving…' : 'Save application' }}
+        </button>
+      </div>
+    </div>
+  </form>
+</dialog>

@@ -1,0 +1,109 @@
+<a class="back-link" routerLink="/">← Back to applications</a>
+<div [attr.aria-busy]="isLoading()">
+  @if (isLoading()) {
+    <section class="state-card" role="status">
+      <h1>Loading application…</h1>
+      <p>Getting the details and status history.</p>
+    </section>
+  } @else if (isNotFound()) {
+    <section class="state-card">
+      <p class="eyebrow">APPLICATION NOT FOUND</p>
+      <h1>This application could not be found</h1>
+      <p>The address may be incorrect, or the application may no longer exist.</p>
+      <a class="secondary-button" routerLink="/">Return to applications</a>
+    </section>
+  } @else if (loadError()) {
+    <section class="state-card" role="alert">
+      <h1>Unable to load application</h1>
+      <p>{{ loadError() }}</p>
+      <button class="secondary-button" type="button" (click)="retryLoading()">Try again</button>
+    </section>
+  } @else if (applicationDetails(); as details) {
+    <header class="details-heading">
+      <div>
+        <p class="eyebrow">APPLICATION DETAILS</p>
+        <h1>{{ details.application.companyName }}</h1>
+        <p>{{ details.application.roleTitle }}</p>
+      </div>
+      <span class="status-badge" [attr.data-status]="details.application.status">{{
+        details.application.status
+      }}</span>
+    </header>
+    <div class="details-grid">
+      <div class="application-information">
+        <section class="details-card" aria-labelledby="overview-heading">
+          <h2 id="overview-heading">Opportunity overview</h2>
+          <dl class="overview-grid">
+            <div>
+              <dt>Role</dt>
+              <dd>{{ details.application.roleTitle }}</dd>
+            </div>
+            <div>
+              <dt>Company</dt>
+              <dd>{{ details.application.companyName }}</dd>
+            </div>
+            <div>
+              <dt>Location</dt>
+              <dd>{{ details.application.location || 'Not provided' }}</dd>
+            </div>
+            <div>
+              <dt>Source</dt>
+              <dd>{{ details.application.source || 'Not provided' }}</dd>
+            </div>
+            <div>
+              <dt>Applied on</dt>
+              <dd>{{ details.application.applicationDate | date: 'dd MMM yyyy' }}</dd>
+            </div>
+            <div>
+              <dt>Job posting</dt>
+              <dd>
+                @if (details.application.jobUrl) {
+                  <a [href]="details.application.jobUrl" target="_blank" rel="noopener noreferrer"
+                    >Open job posting ↗<span class="visually-hidden"> (opens in a new tab)</span></a
+                  >
+                } @else {
+                  Not provided
+                }
+              </dd>
+            </div>
+          </dl>
+        </section>
+        <section class="details-card" aria-labelledby="notes-heading">
+          <h2 id="notes-heading">Notes</h2>
+          @if (details.application.notes) {
+            <p class="application-notes">{{ details.application.notes }}</p>
+          } @else {
+            <p class="muted">No notes added yet.</p>
+          }
+        </section>
+        <p class="record-information">
+          Added {{ details.application.createdAtUtc | date: 'dd MMM yyyy, h:mm a' }} · Last updated
+          {{ details.application.updatedAtUtc | date: 'dd MMM yyyy, h:mm a' }}<br />Times are shown
+          in your browser's local timezone.
+        </p>
+      </div>
+      <section class="details-card history-card" aria-labelledby="history-heading">
+        <h2 id="history-heading">Status history</h2>
+        <p class="history-description">Your application's journey, earliest first.</p>
+        @if (details.statusHistory.length === 0) {
+          <p class="muted">No status history recorded.</p>
+        } @else {
+          <ol class="timeline">
+            @for (
+              historyEntry of details.statusHistory;
+              track historyEntry.jobApplicationStatusHistoryId
+            ) {
+              <li>
+                <span class="timeline-marker" aria-hidden="true"></span>
+                <div>
+                  <strong>{{ historyEntry.status }}</strong>
+                  <p>{{ historyEntry.occurredOn | date: 'dd MMM yyyy' }}</p>
+                </div>
+              </li>
+            }
+          </ol>
+        }
+      </section>
+    </div>
+  }
+</div>

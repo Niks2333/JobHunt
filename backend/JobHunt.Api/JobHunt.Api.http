@@ -1,0 +1,17 @@
+@backendAddress = http://localhost:5077
+
+### Process availability
+GET {{backendAddress}}/api/health
+
+### List real saved applications
+GET {{backendAddress}}/api/applications
+
+### Validation example: this must return HTTP 400 and creates no record
+POST {{backendAddress}}/api/applications
+Content-Type: application/json
+
+{
+  "companyName": "",
+  "roleTitle": "",
+  "applicationDate": "2099-01-01"
+}
