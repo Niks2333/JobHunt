@@ -1,4 +1,5 @@
-param([string]$BackendUrl = 'http://localhost:5077')
+param([string]$BackendUrl = 'http://localhost:5077', [string]$AccessToken = $env:JOBHUNT_TEST_ACCESS_TOKEN)
+. "$PSScriptRoot/Set-TestAuthentication.ps1" -AccessToken $AccessToken
 
 $ErrorActionPreference = 'Stop'
 $testMarker = 'JobHunt analytics ' + [Guid]::NewGuid().ToString('N')
@@ -50,13 +51,13 @@ try {
     }
 
     # Independently recompute the all-time cards using SQL, rather than the LINQ implementation.
-    $sqlCounts = & sqlcmd -S localhost -d JobHunt -E -C -b -h -1 -W -s ',' -Q "SET NOCOUNT ON; SELECT COUNT(*), COALESCE(SUM(HasInterviewHistory), 0) FROM (SELECT CASE WHEN EXISTS (SELECT 1 FROM JobApplicationStatusHistory history WHERE history.JobApplicationId = application.JobApplicationId AND history.Status = 'Interview') THEN 1 ELSE 0 END AS HasInterviewHistory FROM JobApplications application) applications;"
+    $sqlCounts = & sqlcmd -S localhost -d JobHunt -E -C -b -h -1 -W -s ',' -Q "SET NOCOUNT ON; SELECT COUNT(*), COALESCE(SUM(HasInterviewHistory), 0) FROM (SELECT CASE WHEN EXISTS (SELECT 1 FROM JobApplicationStatusHistory history WHERE history.JobApplicationId = application.JobApplicationId AND history.Status = 'Interview') THEN 1 ELSE 0 END AS HasInterviewHistory FROM JobApplications application WHERE application.UserId = '$TestUserId') applications;"
     if ($LASTEXITCODE -ne 0) { throw 'SQL verification failed.' }
     $counts = (($sqlCounts | Where-Object { $_ -match '^\d+,\d+$' }) -split ',')
     $allTime = Invoke-RestMethod "$BackendUrl/api/analytics/applications"
     Assert-Condition ($allTime.totalApplications -eq [int]$counts[0] -and $allTime.applicationsReachingInterview -eq [int]$counts[1]) 'All-time cards must match independent SQL counts.'
     $monthStart = $allTime.currentMonthStartDate
-    $monthCounts = & sqlcmd -S localhost -d JobHunt -E -C -b -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM JobApplications WHERE ApplicationDate >= '$monthStart' AND ApplicationDate < DATEADD(month, 1, CAST('$monthStart' AS date));"
+    $monthCounts = & sqlcmd -S localhost -d JobHunt -E -C -b -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM JobApplications WHERE UserId = '$TestUserId' AND ApplicationDate >= '$monthStart' AND ApplicationDate < DATEADD(month, 1, CAST('$monthStart' AS date));"
     if ($LASTEXITCODE -ne 0) { throw 'Month SQL verification failed.' }
     Assert-Condition ($allTime.applicationsThisMonth -eq [int](($monthCounts | Where-Object { $_ -match '^\d+$' }) | Select-Object -First 1)) 'Monthly card must match SQL.'
     Write-Output 'PASS: date boundaries, repeated interviews, later rejection, offer without interview, counts, source/status breakdowns, empty/open ranges, validation, and independent SQL totals.'

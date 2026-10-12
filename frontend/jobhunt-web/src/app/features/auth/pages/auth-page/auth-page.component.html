@@ -1,0 +1,74 @@
+<main class="auth-shell">
+  <section class="auth-intro" aria-label="Welcome to JobHunt">
+    <a class="brand" routerLink="/login"><span>J</span> JobHunt.</a>
+    <p class="eyebrow">YOUR NEXT CHAPTER</p>
+    <h1>A little structure.<br />A bigger future.</h1>
+    <p>Keep your applications, interview plans, and progress together in your own workspace.</p>
+    <div class="intro-note">One opportunity at a time.</div>
+  </section>
+  <section class="auth-card" aria-labelledby="auth-title">
+    <p class="eyebrow">{{ registering ? 'GET STARTED' : 'WELCOME BACK' }}</p>
+    <h2 id="auth-title">{{ registering ? 'Create your account' : 'Sign in to JobHunt' }}</h2>
+    <p class="description">
+      {{ registering ? 'A workspace for your next move.' : 'Pick up where you left off.' }}
+    </p>
+    @if (success()) {
+      <p class="success-banner" role="status">{{ success() }}</p>
+    }
+    @if (expired) {
+      <p class="description">Your session ended. Please sign in again.</p>
+    }
+    @if (error()) {
+      <p class="error-banner" role="alert">{{ error() }}</p>
+    }
+    <form [formGroup]="form" (ngSubmit)="submit()" [attr.aria-busy]="busy()">
+      <label for="email">Email address</label>
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        autocomplete="email"
+        maxlength="256"
+        [attr.aria-invalid]="form.controls.email.touched && form.controls.email.invalid"
+        aria-describedby="email-help"
+      />
+      @if (form.controls.email.touched && form.controls.email.invalid) {
+        <p id="email-help" class="field-error">Enter a valid email address.</p>
+      }
+      <label for="password">Password</label>
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+        maxlength="128"
+        [autocomplete]="registering ? 'new-password' : 'current-password'"
+        [attr.aria-invalid]="form.controls.password.touched && form.controls.password.invalid"
+        aria-describedby="password-help"
+      />
+      @if (registering) {
+        <p id="password-help" class="hint">
+          Use at least 10 characters with uppercase, lowercase, a number, and a special character.
+        </p>
+        <label for="confirm-password">Confirm password</label>
+        <input
+          id="confirm-password"
+          type="password"
+          formControlName="confirmPassword"
+          autocomplete="new-password"
+          maxlength="128"
+        />
+      } @else if (form.controls.password.touched && form.controls.password.invalid) {
+        <p id="password-help" class="field-error">Enter your password.</p>
+      }
+      <button class="primary-button" type="submit" [disabled]="busy()">
+        {{ busy() ? 'Please wait…' : registering ? 'Create account' : 'Sign in' }}
+      </button>
+    </form>
+    <p class="switch-mode">
+      {{ registering ? 'Already have an account?' : 'New to JobHunt?' }}
+      <a [routerLink]="registering ? '/login' : '/register'">{{
+        registering ? 'Sign in' : 'Create an account'
+      }}</a>
+    </p>
+  </section>
+</main>

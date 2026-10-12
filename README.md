@@ -24,8 +24,9 @@ A personal job application tracker, built step by step with Angular and ASP.NET 
   and cancellation. The dashboard lists the next 10 upcoming rounds.
 - Loading, empty, success, and error states. Failed saves keep the form values.
 
-Current scope is a local single-user tracker with applications, status history, analytics,
-and interview rounds. Login and AI are later milestones. Six fictional applications were added
+Current scope is a local tracker with applications, status history, analytics,
+interview rounds, account registration/login, JWT sessions, and per-user data access.
+AI is a later milestone. Six fictional applications were added
 on request, labeled `[Sample]`, covering all six statuses with matching history.
 
 ## Repository structure
@@ -117,7 +118,7 @@ Windows authentication. The connection string is in `appsettings.Development.jso
 TrustServerCertificate is enabled for the local SQL Server development certificate.
 No SQL passwords are stored. Production configuration is intentionally not supplied.
 
-The database and initial migration have already been applied on this machine.
+The database and migrations, including Identity and session/ownership tables, have been applied on this machine.
 To prepare another machine with SQL Server installed, use PowerShell:
 
 ```powershell
@@ -133,6 +134,9 @@ The server does not automatically create or migrate databases at startup.
 | --- | --- |
 | JobApplications | Current application details and status |
 | JobApplicationStatusHistory | Initial status, event date, and UTC recording time |
+| JobApplicationInterviews | Interview rounds |
+| AspNetUsers and supporting Identity tables | Accounts and Identity storage |
+| RefreshTokens | Hashed refresh tokens and session rotation/revocation history |
 | __EFMigrationsHistory | EF Core's record of applied schema migrations |
 
 ApplicationDate and OccurredOn use calendar dates. CreatedAtUtc, UpdatedAtUtc, and
@@ -201,7 +205,17 @@ cd frontend/jobhunt-web
 npm run build
 ```
 
-With the API running, from the workspace root:
+With the API running, from the workspace root, the full authentication check creates disposable
+accounts and runs the existing feature checks with an authenticated user:
+
+```powershell
+# Use Python 3 with the standard library, or the bundled Codex Python runtime.
+python scripts/Test-Authentication.py
+./scripts/Test-UserRegistration.ps1
+```
+
+For individual tracker checks, set JOBHUNT_TEST_ACCESS_TOKEN to a login access token or pass
+`-AccessToken` to each command below. The details check needs sample records owned by that user.
 
 ```powershell
 ./scripts/Test-JobApplicationFlow.ps1
@@ -219,6 +233,109 @@ It requires the confirmed local SQL Server and Windows authentication configurat
 The details check reads the seeded samples and verifies complete chronological
 history, saved notes, and responses for missing or invalid identifiers.
 Browser visual and interaction checks were unavailable because browser access was denied.
+
+## Authentication
+
+Open `http://localhost:4200/register` to create an account, then sign in at `/login`.
+The Angular route guards restore sessions from the refresh cookie after a page reload.
+The interceptor attaches access tokens to tracker requests, refreshes expired tokens, and
+retries once on HTTP 401. Refresh calls are shared within each tab and serialized across
+tabs through Web Locks when supported. Login/logout changes notify other tabs through
+BroadcastChannel. Access tokens live in memory; neither token is stored in browser web storage.
+
+| Endpoint | Behavior |
+| --- | --- |
+| POST /api/auth/register | Creates an account; HTTP 201 with public user fields |
+| POST /api/auth/login | Verifies password; returns access token, expiry, user; sets refresh cookie |
+| POST /api/auth/refresh | Rotates refresh token and issues a new access token |
+| POST /api/auth/logout | Revokes the login session and clears refresh cookie; HTTP 204 |
+| GET /api/auth/me | Requires bearer token; returns public account fields |
+
+Login, refresh, and logout require `X-JobHunt-CSRF: 1`. Browser Origin must match the API
+origin or an explicitly configured Auth:AllowedOrigins entry. No cross-origin CORS policy
+is enabled. Development permits the Angular localhost origin; deploy UI/API under one origin.
+Auth endpoints have a per-IP limit of 60 requests per minute and return HTTP 429 when exceeded.
+Five incorrect passwords temporarily lock the account for Identity's default five minutes.
+
+Access tokens are signed HS256 JWTs with a 10-minute lifetime. The backend validates signature,
+issuer, audience, algorithm, and expiry, with five seconds of clock tolerance. Refresh sessions
+last seven days from login, use random tokens stored as SHA-256 hashes, and rotate on every
+refresh. Reusing a rotated token revokes its whole session family. SQL row locks serialize
+simultaneous refreshes. Refresh also rejects expired sessions, locked users, and changed
+Identity security stamps. Logout revokes refresh tokens; existing access tokens can remain
+valid until their short expiry. Email verification and password reset email delivery are not configured.
+
+The refresh cookie is HttpOnly, SameSite Strict, scoped to /api/auth, and Secure outside
+Development. Production requires HTTPS and a protected signing secret. Auth responses are not cached.
+
+### Signing key setup
+
+A random development key has been saved in local .NET user secrets, outside this repository.
+On another machine, configure a strong random key using `dotnet user-secrets set Jwt:SigningKey`
+for backend/JobHunt.Api, or set `Jwt__SigningKey` in the environment. Issuer, audience and token
+lifetime are in appsettings.json. The API fails startup if the signing key is missing or too short.
+Do not commit the secret. Production uses protected environment/secret-provider configuration.
+
+### Application ownership
+
+New applications receive the authenticated user's ID server-side. EF query filters scope
+applications, status history, interviews, counts, source filters, upcoming rounds and analytics
+to that user. Requests for another user's application or round return HTTP 404. All tracker
+endpoints require authentication; /api/health remains public.
+
+The seven legacy applications and their 17 history entries were preserved with null owners.
+They are hidden from every account until an explicit local assignment. Register your own
+account, then assign only unowned applications to it:
+
+```powershell
+./scripts/Assign-LegacyApplications.ps1 -Email 'your-email@example.com'
+```
+
+This uses the existing local SQL Server Windows-authentication setup. It never reassigns
+already-owned applications. Ownership is not assigned automatically to the first registrant.
+
+### Registration details
+
+`POST /api/auth/register` accepts an email address (maximum 256 characters) and a
+password (maximum 128 characters). Identity requires unique emails and passwords
+of at least 10 characters containing uppercase, lowercase, a digit, and a non-alphanumeric
+character. Email is also used as the username, so Identity's default username-character
+rules apply. Duplicate emails, including different casing, return HTTP 400 with an
+Email validation error. Invalid fields and weak passwords also return HTTP 400 with
+field-specific validation messages.
+
+Example local learning request:
+
+```json
+{
+  "email": "learner@example.com",
+  "password": "StudyPass!2026"
+}
+```
+
+Successful registration returns HTTP 201 with `{ id, email, emailConfirmed }`.
+EmailConfirmed is false because email verification has not been implemented. Registration
+creates the account without logging in, issuing tokens, or assigning tracker records.
+Existing application APIs now require a bearer token and enforce ownership.
+
+Flow: `AuthController` → `AuthService` → `UserManager<ApplicationUser>` → Identity's
+EF Core store → `JobHuntDbContext` → SQL Server. Identity performs account/password
+validation and hashing; there is no custom password hashing or duplicate account repository.
+The service returns only public account fields. The normalized username unique index
+also prevents simultaneous registrations from saving the same email twice.
+
+The AddIdentityTables and AddAuthenticationSessionsAndOwnership migrations have been applied
+to the local database. Use the existing database update command on a fresh checkout.
+
+With the backend running, verify this feature using PowerShell 7:
+
+```powershell
+./scripts/Test-UserRegistration.ps1
+```
+
+This check verifies validation, duplicate and concurrent registration, safe responses,
+SQL persistence, password verification against the stored Identity hash, and different
+salted hashes for identical passwords. It removes only its own GUID-named test accounts.
 
 ## Next learning checkpoint
 
@@ -326,7 +443,7 @@ does not automatically change application status or add status history; update t
 status separately when the stage actually changes.
 
 The dashboard shows the next 10 future, non-cancelled rounds in chronological order,
-with a total count and links to their applications. This section includes all applications
+with a total count and links to their applications. This section includes the signed-in user's applications
 and is independent of the analytics application-date filter. Past rounds are still
 available in application details. Dashboard Refresh reloads both analytics and interviews.
 

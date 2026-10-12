@@ -9,6 +9,9 @@ public class JobApplicationConfiguration : IEntityTypeConfiguration<JobApplicati
     public void Configure(EntityTypeBuilder<JobApplication> entityBuilder)
     {
         entityBuilder.HasKey(jobApplication => jobApplication.JobApplicationId);
+        entityBuilder.HasOne<ApplicationUser>().WithMany().HasForeignKey(application => application.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+        entityBuilder.HasIndex(application => new { application.UserId, application.ApplicationDate });
         entityBuilder.Property(jobApplication => jobApplication.CompanyName).HasMaxLength(150).IsRequired();
         entityBuilder.Property(jobApplication => jobApplication.RoleTitle).HasMaxLength(150).IsRequired();
         entityBuilder.Property(jobApplication => jobApplication.Location).HasMaxLength(150);

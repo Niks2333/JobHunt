@@ -1,4 +1,5 @@
-param([string]$BackendUrl = 'http://localhost:5077')
+param([string]$BackendUrl = 'http://localhost:5077', [string]$AccessToken = $env:JOBHUNT_TEST_ACCESS_TOKEN)
+. "$PSScriptRoot/Set-TestAuthentication.ps1" -AccessToken $AccessToken
 
 $ErrorActionPreference = 'Stop'
 $testMarker = 'JobHunt filter ' + [Guid]::NewGuid().ToString('N')

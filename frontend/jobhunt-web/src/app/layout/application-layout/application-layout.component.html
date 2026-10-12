@@ -4,10 +4,21 @@
       ><span class="brand-icon">J</span> JobHunt<span class="brand-dot">.</span></a
     >
     <p class="navigation-label">YOUR WORKSPACE</p>
-    <a class="navigation-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page"
+    <a
+      class="navigation-link"
+      routerLink="/"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      ariaCurrentWhenActive="page"
       ><span aria-hidden="true">▤</span> My applications</a
     >
-    <a class="navigation-link" routerLink="/dashboard" routerLinkActive="active" ariaCurrentWhenActive="page"><span aria-hidden="true">▥</span> Dashboard</a>
+    <a
+      class="navigation-link"
+      routerLink="/dashboard"
+      routerLinkActive="active"
+      ariaCurrentWhenActive="page"
+      ><span aria-hidden="true">▥</span> Dashboard</a
+    >
     <div class="sidebar-note">
       <span class="note-dot"></span> One opportunity at a time.
       <p>A little structure for your next big move.</p>
@@ -15,8 +26,17 @@
   </aside>
   <div class="main-area">
     <header class="topbar">
-      <span>Job search workspace</span><span class="local-badge">Personal tracker</span>
+      <span>Job search workspace</span>
     </header>
+    <div class="account-bar">
+      <span>{{ auth.user()?.email }}</span
+      ><button class="secondary-button" (click)="logout()" [disabled]="signingOut()">
+        {{ signingOut() ? 'Signing out…' : 'Sign out' }}
+      </button>
+    </div>
+    @if (logoutError()) {
+      <p class="error-banner" role="alert">{{ logoutError() }}</p>
+    }
     <main id="main-content"><router-outlet /></main>
     <footer>JobHunt · Make your next move count.</footer>
   </div>

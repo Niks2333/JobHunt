@@ -3,6 +3,7 @@ namespace JobHunt.Api.Entities;
 public class JobApplication
 {
     public int JobApplicationId { get; set; }
+    public string? UserId { get; set; }
     public string CompanyName { get; set; } = string.Empty;
     public string RoleTitle { get; set; } = string.Empty;
     public string? Location { get; set; }

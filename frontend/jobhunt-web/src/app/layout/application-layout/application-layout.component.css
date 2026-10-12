@@ -2,6 +2,19 @@
   display: flex;
   min-height: 100vh;
 }
+.account-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 24px;
+  font-size: 13px;
+  background: #fff;
+  border-bottom: 1px solid #e5eaf1;
+}
+.account-bar span {
+  overflow-wrap: anywhere;
+}
 .sidebar {
   width: 236px;
   flex-shrink: 0;
@@ -56,8 +69,13 @@
 .navigation-link span {
   font-size: 20px;
 }
-.navigation-link.active { background: #edf2ff; color: #254ecc; }
-.navigation-link + .navigation-link { margin-top: 6px; }
+.navigation-link.active {
+  background: #edf2ff;
+  color: #254ecc;
+}
+.navigation-link + .navigation-link {
+  margin-top: 6px;
+}
 .sidebar-note {
   margin-top: auto;
   padding: 28px 10px 0;

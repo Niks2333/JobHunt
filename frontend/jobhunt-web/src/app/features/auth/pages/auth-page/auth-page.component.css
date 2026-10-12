@@ -1,0 +1,131 @@
+:host {
+  display: block;
+}
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 64px;
+  max-width: 1120px;
+  padding: 56px 40px;
+  margin: auto;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 25px;
+  font-weight: 750;
+  text-decoration: none;
+  color: #182c49;
+  margin-bottom: 72px;
+}
+.brand span {
+  background: #315fe8;
+  color: white;
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+}
+.auth-intro h1 {
+  font-size: clamp(32px, 4vw, 48px);
+  line-height: 1.18;
+  letter-spacing: -1.4px;
+  margin: 18px 0;
+}
+.auth-intro > p:not(.eyebrow) {
+  color: #627087;
+  max-width: 370px;
+  line-height: 1.8;
+}
+.intro-note {
+  margin-top: 52px;
+  color: #315fe8;
+  font-size: 13px;
+}
+.auth-card {
+  padding: 38px;
+  background: white;
+  border: 1px solid #e5eaf1;
+  border-radius: 18px;
+  box-shadow: 0 14px 48px #182c4908;
+}
+h2 {
+  margin: 12px 0;
+  font-size: 26px;
+  letter-spacing: -0.5px;
+}
+.description,
+.switch-mode {
+  font-size: 14px;
+  color: #627087;
+  line-height: 1.6;
+}
+form {
+  margin-top: 24px;
+}
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 650;
+  margin: 18px 0 8px;
+}
+input {
+  width: 100%;
+  border: 1px solid #dce3ed;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 15px;
+  color: #182c49;
+}
+input[aria-invalid='true'] {
+  border-color: #a82737;
+}
+.hint,
+.field-error {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 8px 0;
+}
+.hint {
+  color: #627087;
+}
+.field-error {
+  color: #a82737;
+}
+button {
+  width: 100%;
+  margin-top: 26px;
+  padding: 13px;
+  font-size: 14px;
+}
+.switch-mode {
+  margin: 24px 0 0;
+  text-align: center;
+}
+a {
+  color: #315fe8;
+}
+@media (max-width: 760px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 28px 20px;
+    max-width: 520px;
+  }
+  .brand {
+    margin-bottom: 24px;
+  }
+  .auth-intro h1 {
+    font-size: 32px;
+  }
+  .intro-note {
+    display: none;
+  }
+  .auth-card {
+    padding: 28px;
+  }
+}

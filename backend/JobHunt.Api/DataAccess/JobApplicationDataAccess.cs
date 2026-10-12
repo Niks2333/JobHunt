@@ -3,10 +3,11 @@ using JobHunt.Api.Entities;
 using Microsoft.EntityFrameworkCore;
 using JobHunt.Api.Models.Requests.JobApplications;
 using JobHunt.Api.DataAccess.Results;
+using JobHunt.Api.Services;
 
 namespace JobHunt.Api.DataAccess;
 
-public class JobApplicationDataAccess(JobHuntDbContext databaseContext)
+public class JobApplicationDataAccess(JobHuntDbContext databaseContext, CurrentUser currentUser)
 {
     public async Task<JobApplicationPageData> GetJobApplicationsAsync(
         GetJobApplicationsRequest request, CancellationToken cancellationToken)
@@ -78,6 +79,7 @@ public class JobApplicationDataAccess(JobHuntDbContext databaseContext)
 
     public async Task CreateJobApplicationAsync(JobApplication jobApplication, CancellationToken cancellationToken)
     {
+        jobApplication.UserId = currentUser.RequiredUserId;
         databaseContext.JobApplications.Add(jobApplication);
         // EF Core saves the application and its related history in one transaction.
         await databaseContext.SaveChangesAsync(cancellationToken);

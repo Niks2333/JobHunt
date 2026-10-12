@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { ApplicationLayoutComponent } from './layout/application-layout/application-layout.component';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
-  imports: [ApplicationLayoutComponent],
+  imports: [RouterOutlet],
   selector: 'app-root',
-  template: '<app-application-layout />',
+  template: '<router-outlet />',
 })
 export class ApplicationComponent {}

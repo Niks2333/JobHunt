@@ -1,0 +1,12 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace JobHunt.Api.Models.Requests.Auth;
+
+public class RegisterUserRequest
+{
+    [Required, EmailAddress, StringLength(256)]
+    public string Email { get; set; } = string.Empty;
+
+    [Required, StringLength(128)]
+    public string Password { get; set; } = string.Empty;
+}
