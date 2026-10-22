@@ -41,6 +41,20 @@ try {
         @($combinedItems.jobApplicationId | Select-Object -Unique).Count -eq 13) 'Paging must preserve newest-first ordering without duplicates.'
 
     $sourceQuery = [Uri]::EscapeDataString($sourceA)
+    foreach ($sortBy in @('newest', 'oldest', 'company')) {
+        $sortedFirst = Invoke-RestMethod "$BackendUrl/api/applications?search=$searchQuery&sortBy=$sortBy"
+        $sortedSecond = Invoke-RestMethod "$BackendUrl/api/applications?search=$searchQuery&sortBy=$sortBy&pageNumber=2"
+        $sortedItems = @($sortedFirst.items) + @($sortedSecond.items)
+        $expectedSorted = switch ($sortBy) {
+            'oldest' { @($combinedItems | Sort-Object applicationDate, jobApplicationId) }
+            'company' { @($combinedItems | Sort-Object companyName, @{Expression='applicationDate';Descending=$true}, @{Expression='jobApplicationId';Descending=$true}) }
+            default { $expectedOrder }
+        }
+        Assert-Condition (($sortedItems.jobApplicationId -join ',') -eq ($expectedSorted.jobApplicationId -join ',')) "Sort $sortBy must order all matches before paging, including ties."
+        $filteredSorted = Invoke-RestMethod "$BackendUrl/api/applications?search=$searchQuery&source=$sourceQuery&sortBy=$sortBy&pageSize=100"
+        $expectedFiltered = @($expectedSorted | Where-Object source -eq $sourceA)
+        Assert-Condition (($filteredSorted.items.jobApplicationId -join ',') -eq ($expectedFiltered.jobApplicationId -join ',')) "Sort $sortBy must work with combined search and source filters."
+    }
     $combinedFilter = Invoke-RestMethod "$BackendUrl/api/applications?search=$searchQuery&status=Interview&source=$sourceQuery"
     Assert-Condition ($combinedFilter.matchingApplications -eq 1 -and $combinedFilter.items[0].source -eq $sourceA -and
         $combinedFilter.items[0].status -eq 'Interview') 'Search, status, and source must combine with AND.'
@@ -59,7 +73,7 @@ try {
     $smallPage = Invoke-RestMethod "$BackendUrl/api/applications?search=$searchQuery&pageSize=5"
     Assert-Condition ($smallPage.items.Count -eq 5 -and $smallPage.totalPages -eq 3) 'Custom page size must be respected.'
 
-    foreach ($invalidQuery in @('pageNumber=0', 'pageNumber=-1', 'pageNumber=1000001', 'pageSize=0', 'pageSize=101', 'pageNumber=abc', 'status=Unknown', 'status=2')) {
+    foreach ($invalidQuery in @('pageNumber=0', 'pageNumber=-1', 'pageNumber=1000001', 'pageSize=0', 'pageSize=101', 'pageNumber=abc', 'status=Unknown', 'status=2', 'sortBy=unknown', 'sortBy=1', 'sortBy=')) {
         $invalidResponse = Invoke-WebRequest "$BackendUrl/api/applications?$invalidQuery" -SkipHttpErrorCheck
         Assert-Condition ($invalidResponse.StatusCode -eq 400) 'Invalid query options must return HTTP 400.'
     }

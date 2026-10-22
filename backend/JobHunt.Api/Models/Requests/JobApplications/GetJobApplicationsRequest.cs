@@ -11,6 +11,9 @@ public class GetJobApplicationsRequest : IValidatableObject
     public string? Status { get; set; }
     [StringLength(100)]
     public string? Source { get; set; }
+    [Required]
+    [RegularExpression("^(newest|oldest|company)$", ErrorMessage = "Choose a valid sort order: newest, oldest, or company.")]
+    public string SortBy { get; set; } = "newest";
     [Range(1, 1_000_000)]
     public int PageNumber { get; set; } = 1;
     [Range(1, 100)]

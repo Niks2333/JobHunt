@@ -30,9 +30,21 @@ public class JobApplicationDataAccess(JobHuntDbContext databaseContext, CurrentU
         // Counts are taken before pagination. Filters and Skip/Take execute in SQL.
         var totalApplications = await allApplications.CountAsync(cancellationToken);
         var matchingApplications = await filteredApplications.CountAsync(cancellationToken);
-        var items = await filteredApplications
-            .OrderByDescending(jobApplication => jobApplication.ApplicationDate)
-            .ThenByDescending(jobApplication => jobApplication.JobApplicationId)
+        // Sort the entire result before paging; the ID breaks ties consistently.
+        var orderedApplications = request.SortBy switch
+        {
+            "oldest" => filteredApplications
+                .OrderBy(application => application.ApplicationDate)
+                .ThenBy(application => application.JobApplicationId),
+            "company" => filteredApplications
+                .OrderBy(application => application.CompanyName)
+                .ThenByDescending(application => application.ApplicationDate)
+                .ThenByDescending(application => application.JobApplicationId),
+            _ => filteredApplications
+                .OrderByDescending(application => application.ApplicationDate)
+                .ThenByDescending(application => application.JobApplicationId)
+        };
+        var items = await orderedApplications
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToListAsync(cancellationToken);

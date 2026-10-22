@@ -19,7 +19,10 @@ import {
   JobApplicationResponse,
   JobApplicationStatus,
 } from '../../models/job-application-response.model';
-import { GetJobApplicationsRequest } from '../../models/get-job-applications-request.model';
+import {
+  ApplicationSortOrder,
+  GetJobApplicationsRequest,
+} from '../../models/get-job-applications-request.model';
 import { CreateJobApplicationRequest } from '../../models/create-job-application-request.model';
 import { JobApplicationFormComponent } from '../../components/job-application-form/job-application-form.component';
 
@@ -38,6 +41,7 @@ export class JobApplicationListComponent implements OnInit {
     search: ['', Validators.maxLength(150)],
     status: this.formBuilder.nonNullable.control<JobApplicationStatus | ''>(''),
     source: [''],
+    sortBy: this.formBuilder.nonNullable.control<ApplicationSortOrder>('newest'),
   });
   readonly availableStatuses: JobApplicationStatus[] = [
     'Applied',
@@ -57,9 +61,12 @@ export class JobApplicationListComponent implements OnInit {
     search: '',
     status: '' as JobApplicationStatus | '',
     source: '',
+    sortBy: 'newest' as ApplicationSortOrder,
   });
   readonly hasActiveFilters = computed(() =>
-    Object.values(this.appliedFilters()).some((value) => value !== ''),
+    [this.appliedFilters().search, this.appliedFilters().status, this.appliedFilters().source].some(
+      (value) => value !== '',
+    ),
   );
   readonly firstVisibleApplication = computed(() =>
     this.jobApplications().length ? (this.pageNumber() - 1) * this.pageSize + 1 : 0,
@@ -127,7 +134,7 @@ export class JobApplicationListComponent implements OnInit {
   }
 
   clearFilters() {
-    this.filterForm.reset({ search: '', status: '', source: '' });
+    this.filterForm.reset({ search: '', status: '', source: '', sortBy: 'newest' });
     this.applyFilters();
   }
 

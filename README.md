@@ -8,6 +8,11 @@ A personal job application tracker, built step by step with Angular and ASP.NET 
 - Search company or role, filter by current status and source, and browse 10 applications
   per page. Apply Filters runs the search; Clear Filters returns to the unfiltered first page.
   Total applications and matching applications are shown separately.
+- Sort My Applications by Newest applied (default), Oldest applied, or Company A–Z.
+  Select an order and click Apply filters; this returns to page 1 and keeps search/status/source
+  filters. Clear filters restores newest-first ordering. The API accepts `sortBy=newest|oldest|company`
+  and rejects unsupported values with HTTP 400. SQL sorts before pagination, with application IDs
+  breaking ties so pages stay consistent.
 - Click a company name to open Application Details: full saved information, notes,
   current stage, and chronological status history. Includes loading, retry, and not-found states.
 - Add Application dialog: company, role, application date, location, source, job link, notes.

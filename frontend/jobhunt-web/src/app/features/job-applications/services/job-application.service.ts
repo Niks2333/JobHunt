@@ -18,6 +18,7 @@ export class JobApplicationService {
       .set('search', request.search)
       .set('status', request.status)
       .set('source', request.source)
+      .set('sortBy', request.sortBy)
       .set('pageNumber', request.pageNumber)
       .set('pageSize', request.pageSize);
     return this.httpClient.get<JobApplicationPageResponse>(this.applicationsEndpoint, {

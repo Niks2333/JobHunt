@@ -58,6 +58,14 @@
       }
     </select>
   </div>
+  <div>
+    <label for="application-sort">Sort by</label>
+    <select id="application-sort" formControlName="sortBy">
+      <option value="newest">Newest applied</option>
+      <option value="oldest">Oldest applied</option>
+      <option value="company">Company A–Z</option>
+    </select>
+  </div>
   <div class="filter-actions">
     <button class="primary-button" type="submit" [disabled]="isLoading()">Apply filters</button
     ><button
@@ -124,7 +132,7 @@
     <div class="table-container">
       <table>
         <caption class="visually-hidden">
-          Saved job applications, newest application date first
+          Saved job applications in the selected sort order
         </caption>
         <thead>
           <tr>
