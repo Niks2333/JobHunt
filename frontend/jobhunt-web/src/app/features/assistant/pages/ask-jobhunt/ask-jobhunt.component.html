@@ -1,0 +1,135 @@
+<header class="page-heading">
+  <p class="eyebrow">YOUR JOB SEARCH ASSISTANT</p>
+  <h1>Ask JobHunt</h1>
+  <p>Ask about your application statistics, saved notes, and interview feedback.</p>
+</header>
+
+<section class="conversation" aria-label="Application questions and answers">
+  <div class="introduction">
+    <span class="assistant-mark" aria-hidden="true">J</span>
+    <div>
+      <h2>How is your job search going?</h2>
+      <p>Ask a question in your own words, or try one below.</p>
+      <p class="scope-note">
+        Your question and relevant statistics or saved note passages are sent to Groq to write an
+        answer. Ask each question independently. Notes answers include source passages you can
+        check.
+      </p>
+    </div>
+  </div>
+
+  <div
+    class="messages"
+    role="log"
+    aria-label="Conversation"
+    aria-live="polite"
+    aria-relevant="additions"
+  >
+    @for (turn of turns(); track $index) {
+      <article class="turn">
+        <div class="question">
+          <span class="speaker">You</span>
+          <p>{{ turn.question }}</p>
+        </div>
+        <div class="answer">
+          <span class="speaker">JobHunt</span>
+          <p>{{ turn.answer.text }}</p>
+          @if (turn.answer.analytics; as analytics) {
+            <details>
+              <summary>Check the source numbers</summary>
+              <dl class="status-counts">
+                @for (status of analytics.applicationsByStatus; track status.label) {
+                  <div>
+                    <dt>{{ status.label }}</dt>
+                    <dd>{{ status.count }}</dd>
+                  </div>
+                }
+              </dl>
+              <p>Total: {{ analytics.totalApplications }} applications.</p>
+            </details>
+            <p class="source">
+              Source: <a routerLink="/dashboard">Application analytics</a> ·
+              {{ analytics.startDate || 'Beginning' }} to {{ analytics.endDate || 'present' }} ·
+              Retrieved {{ turn.answer.retrievedAtUtc | date: 'd MMM y, h:mm:ss a' : '+0530' }} IST
+            </p>
+          }
+          @if (turn.answer.retrieval; as retrieval) {
+            <section class="retrieval-sources" aria-label="Retrieved source passages">
+              <p class="source">
+                Searched {{ retrieval.documentsSearched }} saved text fields ·
+                {{ retrieval.chunksSearched }} passages · Search: {{ retrieval.query }}
+              </p>
+              @for (source of retrieval.sources; track source.id) {
+                <details class="source-card">
+                  <summary>[{{ source.id }}] {{ source.kind }} · {{ source.title }}</summary>
+                  <blockquote>{{ source.passage }}</blockquote>
+                  <a [routerLink]="['/applications', source.jobApplicationId]">Open application</a>
+                  <span class="scope-note"> · Passage {{ source.chunkNumber }}</span>
+                </details>
+              }
+              <p class="source">
+                Retrieved
+                {{ turn.answer.retrievedAtUtc | date: 'd MMM y, h:mm:ss a' : '+0530' }} IST. Results
+                are selected passages, not a complete account summary.
+              </p>
+            </section>
+          }
+        </div>
+      </article>
+    }
+  </div>
+
+  @if (pendingQuestion()) {
+    <p class="loading" role="status">Answering: {{ pendingQuestion() }}</p>
+  }
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <p>{{ error() }}</p>
+      @if (failedQuestion(); as question) {
+        <button class="secondary-button" type="button" (click)="ask(question)">Try again</button>
+      }
+    </div>
+  }
+
+  <div
+    class="question-picker"
+    aria-label="Choose a question"
+    [attr.aria-busy]="!!pendingQuestion()"
+  >
+    @for (question of questions; track question) {
+      <button
+        class="secondary-button"
+        type="button"
+        [disabled]="!!pendingQuestion()"
+        (click)="ask(question)"
+      >
+        {{ question }} <span aria-hidden="true">→</span>
+      </button>
+    }
+  </div>
+  <form class="composer" [formGroup]="questionForm" (ngSubmit)="submit()">
+    <label for="assistant-question">Your question</label>
+    <textarea
+      id="assistant-question"
+      rows="3"
+      maxlength="1000"
+      formControlName="question"
+      placeholder="For example: How many applications did I make yesterday?"
+      [readOnly]="!!pendingQuestion()"
+      aria-describedby="question-help"
+    ></textarea>
+    <p id="question-help" class="scope-note">
+      Up to 1,000 characters. AI answers can make mistakes; check the source numbers or passages.
+    </p>
+    @if (questionInput.touched && questionInput.invalid) {
+      <p class="error-banner" role="alert">Enter a question with 1–1,000 characters.</p>
+    }
+    <button
+      type="submit"
+      class="primary-button"
+      [disabled]="!!pendingQuestion() || questionInput.invalid"
+    >
+      {{ pendingQuestion() ? 'Answering…' : 'Ask JobHunt' }}
+    </button>
+  </form>
+</section>

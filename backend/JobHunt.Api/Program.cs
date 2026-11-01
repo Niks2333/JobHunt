@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Threading.RateLimiting;
+using JobHunt.Api.Services.Assistant;
 
 var applicationBuilder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +49,9 @@ applicationBuilder.Services.AddAuthorization(options =>
 applicationBuilder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = 429;
+    options.AddPolicy("assistant", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.User.FindFirst("sub")?.Value ?? "anonymous",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     options.AddPolicy("auth", context => RateLimitPartition.GetFixedWindowLimiter(
         context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 60, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
@@ -56,6 +60,10 @@ applicationBuilder.Services.AddScoped<JobApplicationDataAccess>();
 applicationBuilder.Services.AddScoped<JobApplicationService>();
 applicationBuilder.Services.AddScoped<ApplicationAnalyticsDataAccess>();
 applicationBuilder.Services.AddScoped<ApplicationAnalyticsService>();
+applicationBuilder.Services.AddHttpClient<GroqChatClient>(client => client.Timeout = TimeSpan.FromSeconds(45));
+applicationBuilder.Services.AddScoped<JobhuntAssistantService>();
+applicationBuilder.Services.AddScoped<AssistantKnowledgeDataAccess>();
+applicationBuilder.Services.AddScoped<NoteRetrievalService>();
 applicationBuilder.Services.AddScoped<JobApplicationInterviewDataAccess>();
 applicationBuilder.Services.AddScoped<JobApplicationInterviewService>();
 

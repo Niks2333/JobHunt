@@ -74,8 +74,8 @@ export class AuthPageComponent {
       if (error instanceof HttpErrorResponse) {
         const fields = error.error?.errors as Record<string, string[]> | undefined;
         this.error.set(
-          error.status === 0
-            ? 'Cannot reach the server. Please try again.'
+          error.status === 0 || [502, 503, 504].includes(error.status)
+            ? 'Cannot reach the JobHunt backend. Start the API on port 5077, then try signing in again.'
             : error.status === 429
               ? 'Too many attempts. Please wait a minute and try again.'
               : fields

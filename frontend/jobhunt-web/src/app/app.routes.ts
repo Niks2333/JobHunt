@@ -29,6 +29,13 @@ export const routes: Routes = [
       ),
     children: [
       {
+        path: 'ask',
+        loadComponent: () =>
+          import('./features/assistant/pages/ask-jobhunt/ask-jobhunt.component').then(
+            (module) => module.AskJobhuntComponent,
+          ),
+      },
+      {
         path: 'dashboard',
         loadComponent: () =>
           import('./features/analytics/pages/application-dashboard/application-dashboard.component').then(

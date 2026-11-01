@@ -31,7 +31,9 @@ A personal job application tracker, built step by step with Angular and ASP.NET 
 
 Current scope is a local tracker with applications, status history, analytics,
 interview rounds, account registration/login, JWT sessions, and per-user data access.
-AI is a later milestone. Six fictional applications were added
+Ask JobHunt accepts typed questions through a Groq-hosted model with application
+analytics and retrieval of saved notes/interview feedback with source citations.
+Six fictional applications were added
 on request, labeled `[Sample]`, covering all six statuses with matching history.
 
 ## Repository structure
@@ -430,6 +432,107 @@ after an interview, offers without interviews, breakdown totals, empty/open rang
 validation, and independent SQL totals. It removes only its own uniquely marked records.
 Browser visual and interaction testing remains unverified because the saved browser
 permission for localhost was denied.
+
+## Ask JobHunt: external AI, tool calling, and RAG
+
+After signing in, choose **Ask JobHunt** in the sidebar or visit
+`http://localhost:4200/ask`. Type a standalone question or choose a suggestion:
+totals, current status/source counts, interview conversion, or counts for a specific
+application-date range. Also ask about skills or topics in your saved application
+notes, interview preparation, and feedback. Questions have a 1,000-character limit. The conversation
+is displayed only in the current page session; previous turns are not sent to the model.
+
+Create a Groq API key at https://console.groq.com/keys using a Free plan account,
+then configure it locally using the hidden-input helper:
+
+```powershell
+./scripts/Set-AssistantApiKey.ps1
+```
+
+It stores `Assistant:GroqApiKey` in this project's .NET user secrets, outside the repository.
+Start the backend from that same PowerShell window after configuring the key:
+
+```powershell
+./scripts/Start-JobHuntApi.ps1
+```
+
+The helper creates a missing local JWT signing key in that Windows account's
+user-secret store, checks whether the Groq key is available without printing it,
+and starts the API. Keep the window open while using the app. If login reports
+that the backend cannot be reached, confirm the window says it is listening on
+`http://localhost:5077`. `GROQ_API_KEY` is also supported
+as backend environment configuration. `Assistant:GroqModel` optionally overrides the
+default `openai/gpt-oss-20b`, an open-weight model hosted by Groq. It does not need
+an OpenAI account or OpenAI API key. Old `Assistant:ApiKey`, `Assistant:Model`, and
+`OPENAI_API_KEY` settings are ignored, preventing accidental use of OpenAI credentials.
+No database migration is required. Free-plan usage is limited; check the Groq Console's
+Limits page for your account's exact allowance. This app does not enroll you in a
+paid plan or detect your billing tier; a paid Groq account follows its own pricing.
+
+Flow: Angular posts to authenticated `POST /api/assistant/ask`. The backend calls
+Groq's Chat Completions API with two functions: `get_application_analytics`
+and `search_application_notes`. The first request requires one tool call; the model
+chooses analytics date arguments or a notes-search query and source type
+(application notes, interview feedback, interview preparation, or all). The backend validates
+the tool and arguments, runs the corresponding scoped service, and sends the
+result back for a final plain-text answer. A successful answer normally makes two
+model requests; a notes search with no matches stops after the first request and
+returns a deterministic no-evidence message.
+The model receives the question and either analytics aggregates or up to five
+retrieved passages with source metadata. It gets no credentials or arbitrary
+database access. The first
+assistant message contains a `tool_calls` entry. Our backend executes the function
+and replies with a `role: tool` message tied to its `tool_call_id`; a second model
+request uses `tool_choice: none` to produce the final answer. Provider reasoning
+metadata is not replayed to the model or displayed in the UI. Data handling follows
+Groq's policies and your account settings.
+
+Existing global EF query filters restrict the tool to the signed-in user. The model
+cannot provide a user ID or SQL. There is a per-user limit of 10 questions/minute,
+a 45-second timeout per provider request, and no automatic provider retries.
+The UI shows an expandable status breakdown, the queried date range, and an IST
+retrieval timestamp so answers can be checked. Provider errors and missing keys
+produce actionable messages without exposing provider response bodies.
+
+Dates filter ApplicationDate, rather than when statuses changed. Interview conversion
+uses interview history; offer rate and pending statuses must be explicitly defined.
+Listing individual applications and counting phone calls remain future steps.
+The current request uses one tool, so combined statistics/notes questions should
+be asked separately. Citation validation checks that IDs exist; it cannot prove
+that every generated claim is supported, so review the displayed source passages.
+
+### Notes RAG implementation
+
+`AssistantKnowledgeDataAccess` reads only the signed-in user's application notes,
+interview preparation, and interview feedback through existing EF query filters.
+Preparation and feedback remain separate sources; cancelled rounds are labeled.
+The source-type filter prevents preparation plans from standing in for actual feedback.
+`NoteRetrievalService` splits text into passages up to 1,000 characters with
+150-character overlap and ranks them using BM25 keyword matching. C# and .NET
+terms are normalized. At most five passages (two per source text field) are sent
+to Groq, each labeled S1, S2, etc. The response shows excerpts and application links.
+No matches means no generated claims. Missing or unknown citation IDs are rejected.
+
+This is lexical RAG: no embeddings, vector database, extra API key, or schema migration.
+Retrieval uses words rather than semantic similarity, so specific skill/company
+names work best. The small-account baseline loads the user's text and rebuilds
+its in-memory corpus on every search; edits/deletions take effect immediately,
+but large accounts will need a persistent index. Search results are selected evidence,
+not proof of exhaustive coverage or a way to calculate account-wide totals.
+
+Try these questions using the demo account's existing interview feedback:
+
+- `What should I revise about SQL based on my interview feedback?`
+- `What does my feedback say about Angular?`
+- `What feedback do I have about JWT authentication?`
+- `What feedback do I have about Kubernetes?` (no matching evidence is expected).
+
+Run backend tests with `dotnet test backend/JobHunt.Api.Tests/JobHunt.Api.Tests.csproj`.
+Assistant tests use a fake provider and isolated SQLite to check the complete
+two-request flow, date validation, per-user filtering, missing keys, and errors.
+RAG tests cover ranking, overlapping chunks, source links/metadata, edits/deletes,
+cross-user isolation, citation checks, and abstention without a second model request.
+A live external AI request still needs a configured, usable key and network access.
 
 ## Interview rounds
 
